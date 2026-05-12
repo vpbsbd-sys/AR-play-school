@@ -3,886 +3,585 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>AR Alphabet 3D</title>
-
-<!-- A-Frame -->
-<script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
-<!-- AR.js with marker tracking -->
-<script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.5/aframe/build/aframe-ar.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nunito',sans-serif;touch-action:manipulation;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { overflow: hidden; font-family: 'Nunito', sans-serif; background: #000; }
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.screen.off{display:none!important;}
 
-  /* ── UI OVERLAY ── */
-  #ui-overlay {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 999;
-  }
+/* SPLASH */
+#splash{background:linear-gradient(160deg,#0f0f23 0%,#1a1a3e 50%,#0d2d50 100%);padding:32px 24px;gap:16px;text-align:center;}
+.logo{font-size:64px;line-height:1;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.s-title{font-family:'Fredoka One',sans-serif;font-size:30px;background:linear-gradient(135deg,#FF6B6B,#FFE66D,#4ECDC4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;}
+.s-sub{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;max-width:290px;}
+.steps-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:16px 18px;width:100%;max-width:320px;text-align:left;}
+.step{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:12px;}
+.step:last-child{margin-bottom:0;}
+.sn{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#FFE66D);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',sans-serif;font-size:13px;color:#1a1a2e;flex-shrink:0;margin-top:1px;}
+.btn{width:100%;max-width:320px;border:none;border-radius:50px;padding:16px;font-family:'Fredoka One',sans-serif;font-size:20px;cursor:pointer;letter-spacing:.5px;transition:transform .15s;}
+.btn:active{transform:scale(.96);}
+.btn-teal{background:linear-gradient(135deg,#4ECDC4,#38b2a8);color:#0f2322;box-shadow:0 6px 20px rgba(78,205,196,.4);}
+.btn-red{background:linear-gradient(135deg,#FF6B6B,#ff4e4e);color:#fff;box-shadow:0 6px 20px rgba(255,107,107,.45);}
+.btn-ghost{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.65);}
 
-  /* top bar */
-  .top-bar {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    padding: 44px 20px 14px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.75) 60%, transparent);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    pointer-events: all;
-  }
-  .app-title {
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 20px;
-    background: linear-gradient(135deg, #FF6B6B, #FFE66D, #4ECDC4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .score-pill {
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 16px;
-    color: #FFE66D;
-  }
+/* MARKER MODAL */
+#marker-modal{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:99999;overflow-y:auto;padding:20px 16px;display:none;flex-direction:column;align-items:center;gap:12px;}
+#marker-modal.on{display:flex;}
+.m-title{font-family:'Fredoka One',sans-serif;font-size:24px;color:#fff;text-align:center;}
+.m-sub{font-size:13px;color:rgba(255,255,255,.5);text-align:center;line-height:1.5;max-width:320px;}
+.marker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:400px;}
+.mk-card{background:#fff;border-radius:12px;border:5px solid #111;padding:10px 6px 8px;text-align:center;}
+.mk-big{font-family:'Fredoka One',sans-serif;font-size:48px;color:#111;line-height:1;border:4px solid #111;border-radius:8px;width:64px;height:64px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;}
+.mk-em{font-size:18px;display:block;}
+.mk-w{font-size:10px;font-weight:700;color:#444;margin-top:2px;}
+.btn-print-all{background:#4ECDC4;border:none;border-radius:14px;padding:14px;font-family:'Fredoka One',sans-serif;font-size:17px;color:#0f2322;cursor:pointer;width:100%;max-width:400px;}
+.btn-back-m{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px;font-family:'Fredoka One',sans-serif;font-size:17px;color:rgba(255,255,255,.65);cursor:pointer;width:100%;max-width:400px;}
 
-  /* scan hint */
-  .scan-hint {
-    position: absolute;
-    bottom: 160px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(78,205,196,0.4);
-    border-radius: 30px;
-    padding: 10px 22px;
-    font-size: 13px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.9);
-    white-space: nowrap;
-    pointer-events: none;
-    animation: hintPulse 2s ease-in-out infinite;
-  }
-  @keyframes hintPulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+/* CAM PERMISSION */
+#cam-screen{background:linear-gradient(160deg,#0f0f23,#1a1a3e);gap:18px;padding:32px 24px;text-align:center;}
+.cam-icon{font-size:72px;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.cam-title{font-family:'Fredoka One',sans-serif;font-size:26px;color:#fff;}
+.cam-sub{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;max-width:280px;}
+#cam-err{color:#ff6b6b;font-size:13px;font-weight:700;max-width:280px;display:none;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);border-radius:12px;padding:10px 14px;line-height:1.5;}
 
-  /* bottom letter strip */
-  .letter-strip {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.85) 70%, transparent);
-    padding: 10px 0 28px;
-    pointer-events: all;
-  }
-  .strip-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.45);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    padding: 0 16px 6px;
-  }
-  .letter-track {
-    display: flex;
-    gap: 8px;
-    padding: 4px 16px 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .letter-track::-webkit-scrollbar { display: none; }
+/* AR VIEW */
+#ar-view{background:#000;}
+#cam-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+#three-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
 
-  .l-btn {
-    flex-shrink: 0;
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    border: 2px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.07);
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 22px;
-    color: rgba(255,255,255,0.7);
-    cursor: pointer;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    transition: all 0.2s;
-    position: relative;
-    gap: 0;
-    line-height: 1;
-  }
-  .l-btn .emoji-mini {
-    font-size: 10px;
-    line-height: 1;
-    margin-top: 1px;
-  }
-  .l-btn.found {
-    border-color: #4ECDC4;
-    background: rgba(78,205,196,0.2);
-    color: #4ECDC4;
-  }
-  .l-btn.tracking {
-    border-color: #FFE66D;
-    background: rgba(255,230,109,0.25);
-    color: #FFE66D;
-    transform: scale(1.12);
-    box-shadow: 0 0 16px rgba(255,230,109,0.5);
-  }
+.hud-top{position:absolute;top:0;left:0;right:0;padding:44px 16px 12px;background:linear-gradient(to bottom,rgba(0,0,0,.75),transparent);display:flex;align-items:center;justify-content:space-between;z-index:10;}
+.hud-title{font-family:'Fredoka One',sans-serif;font-size:18px;background:linear-gradient(135deg,#FF6B6B,#FFE66D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hud-score{background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:6px 14px;font-family:'Fredoka One',sans-serif;font-size:15px;color:#FFE66D;}
+.hud-exit{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;}
 
-  /* info card that appears when letter found */
-  #info-card {
-    position: absolute;
-    top: 100px;
-    left: 16px; right: 16px;
-    background: rgba(15,15,35,0.88);
-    backdrop-filter: blur(16px);
-    border: 1.5px solid rgba(78,205,196,0.4);
-    border-radius: 24px;
-    padding: 18px 20px 16px;
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    transform: translateY(-20px);
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
-    pointer-events: none;
-  }
-  #info-card.show {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  .card-emoji { font-size: 42px; line-height: 1; flex-shrink: 0; }
-  .card-body { flex: 1; }
-  .card-letter {
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 13px;
-    color: rgba(255,255,255,0.4);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-  .card-word {
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 26px;
-    color: #fff;
-    line-height: 1.1;
-  }
-  .card-fact {
-    font-size: 12px;
-    color: rgba(255,255,255,0.6);
-    margin-top: 4px;
-    line-height: 1.4;
-  }
-  .card-phonetic {
-    display: inline-block;
-    background: rgba(78,205,196,0.2);
-    border-radius: 6px;
-    padding: 2px 8px;
-    font-size: 11px;
-    color: #4ECDC4;
-    font-weight: 700;
-    margin-top: 4px;
-  }
+.scan-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:190px;height:190px;pointer-events:none;z-index:5;}
+.sc{position:absolute;width:26px;height:26px;border-color:#4ECDC4;border-style:solid;}
+.sc.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:5px 0 0 0;}
+.sc.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 5px 0 0;}
+.sc.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 5px;}
+.sc.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 5px 0;}
+.scan-ln{position:absolute;left:6px;right:6px;height:2px;background:linear-gradient(90deg,transparent,#4ECDC4,transparent);animation:sl 2s ease-in-out infinite;top:6px;}
+@keyframes sl{0%,100%{top:6px;opacity:.5}50%{top:calc(100% - 8px);opacity:1}}
 
-  /* progress bar */
-  .prog-wrap {
-    position: absolute;
-    top: 90px; left: 16px; right: 16px;
-    height: 3px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .prog-fill {
-    height: 100%;
-    background: linear-gradient(90deg,#FF6B6B,#FFE66D,#4ECDC4);
-    border-radius: 2px;
-    width: 0%;
-    transition: width 0.6s ease;
-  }
+#info-pop{position:absolute;top:90px;left:12px;right:12px;background:rgba(10,10,30,.88);backdrop-filter:blur(16px);border:1.5px solid rgba(78,205,196,.45);border-radius:22px;padding:16px 18px;display:flex;gap:14px;align-items:center;z-index:20;transform:translateY(-16px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+#info-pop.show{transform:translateY(0);opacity:1;}
+.ip-em{font-size:44px;flex-shrink:0;line-height:1;}
+.ip-body{flex:1;}
+.ip-tag{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;}
+.ip-word{font-family:'Fredoka One',sans-serif;font-size:24px;color:#fff;line-height:1.1;}
+.ip-ph{display:inline-block;background:rgba(78,205,196,.2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;color:#4ECDC4;margin:3px 0;}
+.ip-fact{font-size:11px;color:rgba(255,255,255,.6);line-height:1.4;margin-top:3px;}
 
-  /* marker print button */
-  .print-btn {
-    position: absolute;
-    top: 50px; right: 16px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 12px;
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.8);
-    cursor: pointer;
-    pointer-events: all;
-    backdrop-filter: blur(8px);
-  }
+#hint{position:absolute;z-index:10;bottom:168px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid rgba(78,205,196,.35);border-radius:24px;padding:9px 20px;font-size:13px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;animation:hp 2s ease-in-out infinite;transition:opacity .3s;}
+@keyframes hp{0%,100%{opacity:.6}50%{opacity:1}}
 
-  /* splash / instructions */
-  #splash {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(145deg,#0f0f23,#16213e,#0f3460);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 36px 28px;
-    z-index: 9999;
-    text-align: center;
-  }
-  .splash-logo {
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 64px;
-    background: linear-gradient(135deg,#FF6B6B,#FFE66D,#4ECDC4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1;
-  }
-  .splash-title {
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 30px;
-    color: #fff;
-    line-height: 1.2;
-  }
-  .splash-sub {
-    font-size: 15px;
-    color: rgba(255,255,255,0.6);
-    line-height: 1.6;
-    max-width: 300px;
-  }
-  .steps {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 18px;
-    padding: 16px 20px;
-    text-align: left;
-    width: 100%;
-    max-width: 320px;
-  }
-  .step {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-size: 14px;
-    color: rgba(255,255,255,0.8);
-    line-height: 1.4;
-    margin-bottom: 12px;
-  }
-  .step:last-child { margin-bottom: 0; }
-  .step-num {
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    background: linear-gradient(135deg,#FF6B6B,#FFE66D);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 14px;
-    color: #1a1a2e;
-    flex-shrink: 0;
-  }
-  .btn-launch {
-    background: linear-gradient(135deg,#FF6B6B,#ff8e53);
-    border: none;
-    border-radius: 50px;
-    padding: 18px 48px;
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 22px;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(255,107,107,0.45);
-    letter-spacing: 1px;
-    transition: transform 0.15s;
-    width: 100%; max-width: 320px;
-  }
-  .btn-launch:active { transform: scale(0.96); }
+.strip{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.88) 70%,transparent);padding:8px 0 28px;z-index:10;}
+.strip-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;padding:0 14px 5px;}
+.strip-track{display:flex;gap:8px;padding:3px 14px;overflow-x:auto;scrollbar-width:none;}
+.strip-track::-webkit-scrollbar{display:none;}
+.lb{flex-shrink:0;width:50px;height:50px;border-radius:13px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);font-family:'Fredoka One',sans-serif;font-size:20px;color:rgba(255,255,255,.65);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1;transition:all .2s;}
+.lb .em{font-size:11px;margin-top:1px;}
+.lb.found{border-color:#4ECDC4;background:rgba(78,205,196,.2);color:#4ECDC4;}
+.lb.active{border-color:#FFE66D;background:rgba(255,230,109,.25);color:#FFE66D;transform:scale(1.12);box-shadow:0 0 14px rgba(255,230,109,.45);}
 
-  /* marker print modal */
-  #marker-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.92);
-    z-index: 99999;
-    display: none;
-    overflow-y: auto;
-    padding: 20px;
-  }
-  #marker-modal.open { display: block; }
-  .modal-inner {
-    background: #1a1a2e;
-    border-radius: 24px;
-    padding: 24px;
-    max-width: 400px;
-    margin: 0 auto;
-  }
-  .modal-title {
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 24px;
-    color: #fff;
-    margin-bottom: 8px;
-  }
-  .modal-sub {
-    font-size: 13px;
-    color: rgba(255,255,255,0.55);
-    margin-bottom: 20px;
-    line-height: 1.5;
-  }
-  .marker-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .marker-card {
-    background: white;
-    border-radius: 12px;
-    padding: 10px 6px 8px;
-    text-align: center;
-    cursor: pointer;
-    border: 3px solid transparent;
-    transition: border-color 0.2s;
-  }
-  .marker-card:hover { border-color: #4ECDC4; }
-  .marker-letter-big {
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 48px;
-    color: #1a1a2e;
-    line-height: 1;
-    display: block;
-    border: 4px solid #1a1a2e;
-    border-radius: 8px;
-    background: #fff;
-    width: 72px; height: 72px;
-    margin: 0 auto 4px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .marker-emoji-label { font-size: 18px; }
-  .marker-word-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: #555;
-    margin-top: 2px;
-  }
-  .btn-print {
-    background: #4ECDC4;
-    border: none;
-    border-radius: 12px;
-    padding: 14px;
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 16px;
-    color: #1a1a2e;
-    cursor: pointer;
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  .btn-close-modal {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 12px;
-    padding: 14px;
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 16px;
-    color: rgba(255,255,255,0.7);
-    cursor: pointer;
-    width: 100%;
-  }
+.prog{position:absolute;top:86px;left:14px;right:14px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;z-index:10;}
+.prog-f{height:100%;background:linear-gradient(90deg,#FF6B6B,#FFE66D,#4ECDC4);border-radius:2px;width:0%;transition:width .6s;}
+
+@media print{
+  body>*:not(#marker-modal){display:none!important;}
+  #marker-modal{display:flex!important;background:white;padding:12px;}
+  .m-title,.m-sub,.btn-print-all,.btn-back-m{display:none!important;}
+  .marker-grid{grid-template-columns:repeat(4,1fr);gap:10px;}
+  .mk-card{border:6px solid #000!important;}
+}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════
-     SPLASH SCREEN
-═══════════════════════════════════════════ -->
-<div id="splash">
-  <div class="splash-logo">🔤</div>
-  <div class="splash-title">AR Alphabet<br>3D Explorer</div>
-  <p class="splash-sub">Hold your phone over printed letter cards — watch 3D characters appear and come to life!</p>
-
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <div>Tap <strong style="color:#FFE66D">View Markers</strong> and print the letter cards from your phone or computer</div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div>Tap <strong style="color:#4ECDC4">Launch AR</strong> and allow camera access</div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div>Point your camera at any letter card — a <strong style="color:#FF6B6B">3D model</strong> will pop up!</div>
-    </div>
+<!-- ══ SPLASH ══ -->
+<div id="splash" class="screen">
+  <div class="logo">🔤</div>
+  <div class="s-title">AR Alphabet<br>3D Explorer</div>
+  <p class="s-sub">Print letter cards, point your camera at them — watch 3D animals pop up in real time!</p>
+  <div class="steps-box">
+    <div class="step"><div class="sn">1</div><div>Tap <b style="color:#FFE66D">View Markers</b> and print the letter cards</div></div>
+    <div class="step"><div class="sn">2</div><div>Tap <b style="color:#4ECDC4">Launch AR Camera</b> and allow access</div></div>
+    <div class="step"><div class="sn">3</div><div>Hold a card in front of camera — a <b style="color:#FF6B6B">3D animal</b> appears!</div></div>
   </div>
-
-  <button class="btn-launch" onclick="openMarkerModal()" style="background:linear-gradient(135deg,#4ECDC4,#44b8b0)">🖨️ View & Print Markers</button>
-  <button class="btn-launch" onclick="launchAR()">🚀 Launch AR Camera</button>
+  <button class="btn btn-teal" onclick="showMarkers()">🖨️ View &amp; Print Markers</button>
+  <button class="btn btn-red" onclick="startCamScreen()">📷 Launch AR Camera</button>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     MARKER PRINT MODAL
-═══════════════════════════════════════════ -->
+<!-- ══ MARKER MODAL ══ -->
 <div id="marker-modal">
-  <div class="modal-inner">
-    <div class="modal-title">🖨️ Print Alphabet Markers</div>
-    <div class="modal-sub">Print these cards and hold them under your camera. Each letter triggers its own 3D character. The thick black border is the AR tracking marker.</div>
-    <div class="marker-grid" id="markerGrid"></div>
-    <button class="btn-print" onclick="window.print()">🖨️ Print All Cards</button>
-    <button class="btn-close-modal" onclick="closeModal()">← Back</button>
-  </div>
+  <div class="m-title">🖨️ Print Letter Cards</div>
+  <p class="m-sub">Print these cards — the thick black border helps the camera recognise each letter.</p>
+  <div class="marker-grid" id="mGrid"></div>
+  <button class="btn-print-all" onclick="window.print()">🖨️ Print All Cards</button>
+  <button class="btn-back-m" onclick="document.getElementById('marker-modal').classList.remove('on')">← Back</button>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     A-FRAME AR SCENE  (hidden until launched)
-═══════════════════════════════════════════ -->
-<div id="ar-container" style="display:none; position:fixed; inset:0; z-index:100;">
-
-<a-scene
-  id="arScene"
-  embedded
-  arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
-  renderer="logarithmicDepthBuffer: true; antialias: true;"
-  vr-mode-ui="enabled: false"
-  style="width:100%; height:100%;"
->
-
-  <!-- ── ASSETS ── -->
-  <a-assets>
-    <!-- We use primitive A-Frame geometries + materials to build each 3D character
-         so no external model files are needed — works offline! -->
-  </a-assets>
-
-  <!-- ══════════════════════════════════════
-       LETTER A — APPLE (red sphere + stem)
-  ══════════════════════════════════════ -->
-  <a-marker type="barcode" value="0" id="markerA">
-    <a-entity id="modelA" scale="0 0 0">
-      <!-- Apple body -->
-      <a-sphere position="0 0.6 0" radius="0.55" color="#e74c3c" roughness="0.3" metalness="0.1"></a-sphere>
-      <!-- Shine -->
-      <a-sphere position="0.15 0.95 0.35" radius="0.1" color="#ff9999" roughness="0.1" metalness="0.2" opacity="0.7"></a-sphere>
-      <!-- Stem -->
-      <a-cylinder position="0 1.25 0" radius="0.04" height="0.28" color="#5d4037"></a-cylinder>
-      <!-- Leaf -->
-      <a-cone position="0.12 1.28 0" radius-bottom="0.15" radius-top="0" height="0.2" color="#27ae60" rotation="0 0 -40"></a-cone>
-      <!-- Dent top -->
-      <a-sphere position="0 1.1 0" radius="0.1" color="#c0392b"></a-sphere>
-      <!-- Shadow -->
-      <a-circle position="0 0.01 0" radius="0.5" rotation="-90 0 0" color="#000" opacity="0.2"></a-circle>
-      <!-- Label -->
-      <a-text value="A — Apple" align="center" position="0 -0.15 0" rotation="-90 0 0" color="#fff" width="2.5" font="mozillavr"></a-text>
-    </a-entity>
-  </a-marker>
-
-  <!-- ══════════════════════════════════════
-       LETTER B — BEE (yellow + black body)
-  ══════════════════════════════════════ -->
-  <a-marker type="barcode" value="1" id="markerB">
-    <a-entity id="modelB" scale="0 0 0">
-      <!-- Body -->
-      <a-sphere position="0 0.5 0" radius="0.38" color="#f1c40f" roughness="0.4"></a-sphere>
-      <!-- Stripes -->
-      <a-torus position="0 0.56 0" radius="0.38" radius-tubular="0.07" color="#2c3e50" rotation="90 0 0"></a-torus>
-      <a-torus position="0 0.44 0" radius="0.38" radius-tubular="0.07" color="#2c3e50" rotation="90 0 0"></a-torus>
-      <!-- Head -->
-      <a-sphere position="0 0.88 0" radius="0.22" color="#f39c12"></a-sphere>
-      <!-- Eyes -->
-      <a-sphere position="0.1 0.93 0.18" radius="0.06" color="#2c3e50"></a-sphere>
-      <a-sphere position="-0.1 0.93 0.18" radius="0.06" color="#2c3e50"></a-sphere>
-      <!-- Wings -->
-      <a-ellipsoid position="0.45 0.75 0" width="0.4" height="0.08" depth="0.25" color="#ecf0f1" opacity="0.7" rotation="0 -20 30"></a-ellipsoid>
-      <a-ellipsoid position="-0.45 0.75 0" width="0.4" height="0.08" depth="0.25" color="#ecf0f1" opacity="0.7" rotation="0 20 -30"></a-ellipsoid>
-      <!-- Stinger -->
-      <a-cone position="0 0.12 0" radius-bottom="0.1" radius-top="0" height="0.22" color="#f39c12" rotation="180 0 0"></a-cone>
-      <a-circle position="0 0.01 0" radius="0.45" rotation="-90 0 0" color="#000" opacity="0.15"></a-circle>
-      <a-text value="B — Bee" align="center" position="0 -0.15 0" rotation="-90 0 0" color="#fff" width="2.5"></a-text>
-    </a-entity>
-  </a-marker>
-
-  <!-- ══════════════════════════════════════
-       LETTER C — CAT
-  ══════════════════════════════════════ -->
-  <a-marker type="barcode" value="2" id="markerC">
-    <a-entity id="modelC" scale="0 0 0">
-      <!-- Body -->
-      <a-sphere position="0 0.4 0" radius="0.38" color="#e67e22" roughness="0.6"></a-sphere>
-      <!-- Head -->
-      <a-sphere position="0 0.88 0" radius="0.3" color="#e67e22"></a-sphere>
-      <!-- Ears -->
-      <a-cone position="0.18 1.18 0" radius-bottom="0.12" radius-top="0" height="0.22" color="#e67e22" rotation="0 0 20"></a-cone>
-      <a-cone position="-0.18 1.18 0" radius-bottom="0.12" radius-top="0" height="0.22" color="#e67e22" rotation="0 0 -20"></a-cone>
-      <!-- Inner ears -->
-      <a-cone position="0.18 1.18 0" radius-bottom="0.07" radius-top="0" height="0.14" color="#e84393" rotation="0 0 20"></a-cone>
-      <a-cone position="-0.18 1.18 0" radius-bottom="0.07" radius-top="0" height="0.14" color="#e84393" rotation="0 0 -20"></a-cone>
-      <!-- Eyes -->
-      <a-sphere position="0.1 0.93 0.26" radius="0.06" color="#27ae60"></a-sphere>
-      <a-sphere position="-0.1 0.93 0.26" radius="0.06" color="#27ae60"></a-sphere>
-      <a-sphere position="0.1 0.93 0.3" radius="0.03" color="#000"></a-sphere>
-      <a-sphere position="-0.1 0.93 0.3" radius="0.03" color="#000"></a-sphere>
-      <!-- Nose -->
-      <a-sphere position="0 0.86 0.3" radius="0.04" color="#e84393"></a-sphere>
-      <!-- Tail -->
-      <a-torus position="0.35 0.25 -0.1" radius="0.25" radius-tubular="0.05" color="#d35400" rotation="80 0 60" arc="200"></a-torus>
-      <a-circle position="0 0.01 0" radius="0.45" rotation="-90 0 0" color="#000" opacity="0.15"></a-circle>
-      <a-text value="C — Cat" align="center" position="0 -0.15 0" rotation="-90 0 0" color="#fff" width="2.5"></a-text>
-    </a-entity>
-  </a-marker>
-
-  <!-- ══════════════════════════════════════
-       LETTER D — DUCK
-  ══════════════════════════════════════ -->
-  <a-marker type="barcode" value="3" id="markerD">
-    <a-entity id="modelD" scale="0 0 0">
-      <!-- Body -->
-      <a-sphere position="0 0.35 0" radius="0.42" color="#f1c40f" scale="1 0.8 1.2"></a-sphere>
-      <!-- Head -->
-      <a-sphere position="0.3 0.75 0.2" radius="0.22" color="#f1c40f"></a-sphere>
-      <!-- Beak -->
-      <a-cone position="0.52 0.72 0.2" radius-bottom="0.1" radius-top="0.06" height="0.2" color="#e67e22" rotation="0 0 -90"></a-cone>
-      <!-- Eye -->
-      <a-sphere position="0.38 0.8 0.35" radius="0.05" color="#2c3e50"></a-sphere>
-      <!-- Wing -->
-      <a-ellipsoid position="-0.1 0.5 0.15" width="0.35" height="0.12" depth="0.5" color="#f39c12" rotation="0 -15 10"></a-ellipsoid>
-      <!-- Feet -->
-      <a-box position="0.1 0.0 0.18" width="0.22" height="0.04" depth="0.3" color="#e67e22"></a-box>
-      <a-box position="-0.1 0.0 0.18" width="0.22" height="0.04" depth="0.3" color="#e67e22"></a-box>
-      <a-circle position="0 0.01 0" radius="0.5" rotation="-90 0 0" color="#000" opacity="0.15"></a-circle>
-      <a-text value="D — Duck" align="center" position="0 -0.15 0" rotation="-90 0 0" color="#fff" width="2.5"></a-text>
-    </a-entity>
-  </a-marker>
-
-  <!-- ══════════════════════════════════════
-       LETTER E — ELEPHANT
-  ══════════════════════════════════════ -->
-  <a-marker type="barcode" value="4" id="markerE">
-    <a-entity id="modelE" scale="0 0 0">
-      <!-- Body -->
-      <a-sphere position="0 0.4 0" radius="0.5" color="#95a5a6" scale="1 0.85 1.1"></a-sphere>
-      <!-- Head -->
-      <a-sphere position="0 0.92 0.3" radius="0.32" color="#95a5a6"></a-sphere>
-      <!-- Trunk -->
-      <a-cylinder position="0 0.7 0.58" radius="0.08" height="0.38" color="#7f8c8d" rotation="30 0 0"></a-cylinder>
-      <a-sphere position="0 0.56 0.72" radius="0.09" color="#7f8c8d"></a-sphere>
-      <!-- Ears -->
-      <a-ellipsoid position="0.4 0.82 0.1" width="0.35" height="0.45" depth="0.08" color="#bdc3c7" rotation="0 -20 15"></a-ellipsoid>
-      <a-ellipsoid position="-0.4 0.82 0.1" width="0.35" height="0.45" depth="0.08" color="#bdc3c7" rotation="0 20 -15"></a-ellipsoid>
-      <!-- Eyes -->
-      <a-sphere position="0.14 0.98 0.55" radius="0.05" color="#2c3e50"></a-sphere>
-      <a-sphere position="-0.14 0.98 0.55" radius="0.05" color="#2c3e50"></a-sphere>
-      <!-- Tusks -->
-      <a-cylinder position="0.1 0.78 0.62" radius="0.03" height="0.28" color="#ecf0f1" rotation="25 10 0"></a-cylinder>
-      <a-cylinder position="-0.1 0.78 0.62" radius="0.03" height="0.28" color="#ecf0f1" rotation="25 -10 0"></a-cylinder>
-      <!-- Legs -->
-      <a-cylinder position="0.22 0.1 0.2" radius="0.1" height="0.35" color="#7f8c8d"></a-cylinder>
-      <a-cylinder position="-0.22 0.1 0.2" radius="0.1" height="0.35" color="#7f8c8d"></a-cylinder>
-      <a-cylinder position="0.22 0.1 -0.2" radius="0.1" height="0.35" color="#7f8c8d"></a-cylinder>
-      <a-cylinder position="-0.22 0.1 -0.2" radius="0.1" height="0.35" color="#7f8c8d"></a-cylinder>
-      <a-circle position="0 0.01 0" radius="0.55" rotation="-90 0 0" color="#000" opacity="0.15"></a-circle>
-      <a-text value="E — Elephant" align="center" position="0 -0.15 0" rotation="-90 0 0" color="#fff" width="2.8"></a-text>
-    </a-entity>
-  </a-marker>
-
-  <!-- ══════════════════════════════════════
-       LETTER F — FROG
-  ══════════════════════════════════════ -->
-  <a-marker type="barcode" value="5" id="markerF">
-    <a-entity id="modelF" scale="0 0 0">
-      <a-sphere position="0 0.3 0" radius="0.4" color="#27ae60" scale="1 0.7 1.1"></a-sphere>
-      <a-sphere position="0 0.65 0.1" radius="0.3" color="#2ecc71"></a-sphere>
-      <!-- Eyes on top -->
-      <a-sphere position="0.18 0.9 0.05" radius="0.12" color="#2ecc71"></a-sphere>
-      <a-sphere position="-0.18 0.9 0.05" radius="0.12" color="#2ecc71"></a-sphere>
-      <a-sphere position="0.18 0.94 0.12" radius="0.07" color="#2c3e50"></a-sphere>
-      <a-sphere position="-0.18 0.94 0.12" radius="0.07" color="#2c3e50"></a-sphere>
-      <a-sphere position="0.18 0.94 0.16" radius="0.04" color="#fff" opacity="0.8"></a-sphere>
-      <a-sphere position="-0.18 0.94 0.16" radius="0.04" color="#fff" opacity="0.8"></a-sphere>
-      <!-- Smile -->
-      <a-torus position="0 0.6 0.28" radius="0.12" radius-tubular="0.025" color="#1a8a45" rotation="90 0 0" arc="180"></a-torus>
-      <!-- Front legs -->
-      <a-cylinder position="0.42 0.28 0.25" radius="0.05" height="0.4" color="#27ae60" rotation="0 0 50"></a-cylinder>
-      <a-cylinder position="-0.42 0.28 0.25" radius="0.05" height="0.4" color="#27ae60" rotation="0 0 -50"></a-cylinder>
-      <!-- Back legs -->
-      <a-cylinder position="0.38 0.15 -0.22" radius="0.06" height="0.45" color="#27ae60" rotation="30 -30 40"></a-cylinder>
-      <a-cylinder position="-0.38 0.15 -0.22" radius="0.06" height="0.45" color="#27ae60" rotation="30 30 -40"></a-cylinder>
-      <a-circle position="0 0.01 0" radius="0.5" rotation="-90 0 0" color="#000" opacity="0.15"></a-circle>
-      <a-text value="F — Frog" align="center" position="0 -0.15 0" rotation="-90 0 0" color="#fff" width="2.5"></a-text>
-    </a-entity>
-  </a-marker>
-
-  <!-- ══════════════════════════════════════
-       LETTER G — GIRAFFE
-  ══════════════════════════════════════ -->
-  <a-marker type="barcode" value="6" id="markerG">
-    <a-entity id="modelG" scale="0 0 0" position="0 0 0">
-      <!-- Body -->
-      <a-box position="0 0.38 0" width="0.5" height="0.5" depth="0.7" color="#f39c12" roughness="0.6"></a-box>
-      <!-- Neck -->
-      <a-cylinder position="0.1 0.88 0.15" radius="0.1" height="0.7" color="#f39c12" rotation="15 0 0"></a-cylinder>
-      <!-- Head -->
-      <a-box position="0.1 1.28 0.32" width="0.22" height="0.2" depth="0.32" color="#f39c12"></a-box>
-      <!-- Horns (ossicones) -->
-      <a-cylinder position="0.17 1.42 0.2" radius="0.03" height="0.18" color="#8B6914"></a-cylinder>
-      <a-cylinder position="0.03 1.42 0.2" radius="0.03" height="0.18" color="#8B6914"></a-cylinder>
-      <!-- Eye -->
-      <a-sphere position="0.2 1.3 0.46" radius="0.05" color="#2c3e50"></a-sphere>
-      <!-- Patches -->
-      <a-box position="0 0.55 0.3" width="0.18" height="0.2" depth="0.05" color="#d35400" roughness="0.8"></a-box>
-      <a-box position="0.18 0.38 0.32" width="0.14" height="0.18" depth="0.05" color="#d35400" roughness="0.8"></a-box>
-      <a-box position="-0.15 0.25 0.3" width="0.12" height="0.12" depth="0.05" color="#d35400"></a-box>
-      <!-- Legs -->
-      <a-cylinder position="0.18 0.08 0.22" radius="0.06" height="0.4" color="#e67e22"></a-cylinder>
-      <a-cylinder position="-0.18 0.08 0.22" radius="0.06" height="0.4" color="#e67e22"></a-cylinder>
-      <a-cylinder position="0.18 0.08 -0.22" radius="0.06" height="0.4" color="#e67e22"></a-cylinder>
-      <a-cylinder position="-0.18 0.08 -0.22" radius="0.06" height="0.4" color="#e67e22"></a-cylinder>
-      <!-- Tail -->
-      <a-cylinder position="0 0.45 -0.4" radius="0.03" height="0.25" color="#d35400" rotation="-20 0 0"></a-cylinder>
-      <a-circle position="0 0.01 0" radius="0.5" rotation="-90 0 0" color="#000" opacity="0.15"></a-circle>
-      <a-text value="G — Giraffe" align="center" position="0 -0.15 0" rotation="-90 0 0" color="#fff" width="2.8"></a-text>
-    </a-entity>
-  </a-marker>
-
-  <!-- ══════════════════════════════════════
-       LETTER H — HORSE
-  ══════════════════════════════════════ -->
-  <a-marker type="barcode" value="7" id="markerH">
-    <a-entity id="modelH" scale="0 0 0">
-      <a-box position="0 0.4 0" width="0.55" height="0.45" depth="0.8" color="#8B4513" roughness="0.7"></a-box>
-      <a-cylinder position="0 0.72 0.25" radius="0.12" height="0.45" color="#8B4513" rotation="20 0 0"></a-cylinder>
-      <a-box position="0 0.98 0.42" width="0.2" height="0.22" depth="0.36" color="#8B4513"></a-box>
-      <!-- Mane -->
-      <a-box position="0 0.85 0.28" width="0.08" height="0.28" depth="0.35" color="#4a2508" roughness="0.9"></a-box>
-      <!-- Ears -->
-      <a-cone position="0.08 1.14 0.36" radius-bottom="0.06" radius-top="0" height="0.14" color="#8B4513" rotation="0 0 -10"></a-cone>
-      <a-cone position="-0.08 1.14 0.36" radius-bottom="0.06" radius-top="0" height="0.14" color="#8B4513" rotation="0 0 10"></a-cone>
-      <!-- Eye -->
-      <a-sphere position="0.1 1.0 0.58" radius="0.04" color="#2c3e50"></a-sphere>
-      <!-- Nostrils -->
-      <a-sphere position="0.06 0.9 0.6" radius="0.025" color="#5d2d0a"></a-sphere>
-      <a-sphere position="-0.06 0.9 0.6" radius="0.025" color="#5d2d0a"></a-sphere>
-      <!-- Legs -->
-      <a-cylinder position="0.2 0.08 0.28" radius="0.07" height="0.42" color="#6b3410"></a-cylinder>
-      <a-cylinder position="-0.2 0.08 0.28" radius="0.07" height="0.42" color="#6b3410"></a-cylinder>
-      <a-cylinder position="0.2 0.08 -0.28" radius="0.07" height="0.42" color="#6b3410"></a-cylinder>
-      <a-cylinder position="-0.2 0.08 -0.28" radius="0.07" height="0.42" color="#6b3410"></a-cylinder>
-      <!-- Hooves -->
-      <a-box position="0.2 -0.14 0.28" width="0.14" height="0.08" depth="0.18" color="#2c3e50"></a-box>
-      <a-box position="-0.2 -0.14 0.28" width="0.14" height="0.08" depth="0.18" color="#2c3e50"></a-box>
-      <!-- Tail -->
-      <a-cylinder position="0 0.42 -0.45" radius="0.04" height="0.3" color="#4a2508" rotation="-20 0 0"></a-cylinder>
-      <a-circle position="0 0.01 0" radius="0.5" rotation="-90 0 0" color="#000" opacity="0.15"></a-circle>
-      <a-text value="H — Horse" align="center" position="0 -0.15 0" rotation="-90 0 0" color="#fff" width="2.5"></a-text>
-    </a-entity>
-  </a-marker>
-
-  <!-- Camera -->
-  <a-entity camera></a-entity>
-
-</a-scene>
-
+<!-- ══ CAMERA PERMISSION ══ -->
+<div id="cam-screen" class="screen off">
+  <div class="cam-icon">📷</div>
+  <div class="cam-title">Camera Access</div>
+  <p class="cam-sub">We need your camera to detect letter cards and overlay 3D animals on them.</p>
+  <div id="cam-err"></div>
+  <button class="btn btn-red" id="cam-btn" onclick="requestCamera()">Allow Camera &amp; Start AR</button>
+  <button class="btn btn-ghost" onclick="only('splash')" style="margin-top:6px;">← Back</button>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     UI OVERLAY (shown during AR)
-═══════════════════════════════════════════ -->
-<div id="ui-overlay" style="display:none;">
+<!-- ══ AR VIEW ══ -->
+<div id="ar-view" class="screen off">
+  <video id="cam-video" autoplay playsinline muted></video>
+  <canvas id="three-canvas"></canvas>
 
-  <div class="top-bar">
-    <span class="app-title">AR Alphabet 3D</span>
-    <span class="score-pill">⭐ <span id="scoreNum">0</span></span>
+  <div class="hud-top">
+    <button class="hud-exit" onclick="stopAR()">✕ Exit</button>
+    <div class="hud-title">AR Alphabet 3D</div>
+    <div class="hud-score">⭐ <span id="scoreNum">0</span></div>
   </div>
 
-  <div class="prog-wrap">
-    <div class="prog-fill" id="progFill"></div>
-  </div>
+  <div class="prog"><div class="prog-f" id="progF"></div></div>
 
-  <!-- Info card -->
-  <div id="info-card">
-    <div class="card-emoji" id="cardEmoji">🍎</div>
-    <div class="card-body">
-      <div class="card-letter" id="cardLetterLabel">LETTER A</div>
-      <div class="card-word" id="cardWord">Apple</div>
-      <div class="card-phonetic" id="cardPhonetic">/ æ / like in "cat"</div>
-      <div class="card-fact" id="cardFact">Apples come in 7,500 varieties!</div>
+  <div id="info-pop">
+    <div class="ip-em" id="ipEm">🍎</div>
+    <div class="ip-body">
+      <div class="ip-tag" id="ipTag">LETTER A</div>
+      <div class="ip-word" id="ipWord">Apple</div>
+      <div class="ip-ph" id="ipPh">/ æ /</div>
+      <div class="ip-fact" id="ipFact">Over 7,500 varieties!</div>
     </div>
   </div>
 
-  <div class="scan-hint" id="scanHint">📷 Point camera at a letter card</div>
-
-  <!-- Letter strip -->
-  <div class="letter-strip">
-    <div class="strip-label">Tap to preview · Hold card to detect</div>
-    <div class="letter-track" id="letterTrack"></div>
+  <div class="scan-box">
+    <div class="sc tl"></div><div class="sc tr"></div>
+    <div class="sc bl"></div><div class="sc br"></div>
+    <div class="scan-ln"></div>
   </div>
 
+  <div id="hint">📋 Hold a printed letter card in the frame</div>
+
+  <div class="strip">
+    <div class="strip-lbl">Tap any letter to preview its 3D animal</div>
+    <div class="strip-track" id="stripTrack"></div>
+  </div>
 </div>
 
 <script>
-// ── DATA ──────────────────────────────────────────
-const DATA = {
-  A:{emoji:'🍎',word:'Apple',phonetic:'/ æ / "cat"',fact:'Over 7,500 apple varieties exist worldwide!',color:'#e74c3c',markerId:0},
-  B:{emoji:'🐝',word:'Bee',phonetic:'/ b / "ball"',fact:'Bees visit 2,000 flowers per day!',color:'#f1c40f',markerId:1},
-  C:{emoji:'🐱',word:'Cat',phonetic:'/ k / "kite"',fact:'Cats have 32 muscles in each ear!',color:'#e67e22',markerId:2},
-  D:{emoji:'🦆',word:'Duck',phonetic:'/ d / "dog"',fact:'Ducks can sleep with one eye open!',color:'#3498db',markerId:3},
-  E:{emoji:'🐘',word:'Elephant',phonetic:'/ ɛ / "bed"',fact:'Elephants never forget — truly!',color:'#95a5a6',markerId:4},
-  F:{emoji:'🐸',word:'Frog',phonetic:'/ f / "fan"',fact:'Frogs drink water through their skin!',color:'#27ae60',markerId:5},
-  G:{emoji:'🦒',word:'Giraffe',phonetic:'/ g / "go"',fact:'Giraffe tongues are 45 cm long and purple!',color:'#e67e22',markerId:6},
-  H:{emoji:'🐴',word:'Horse',phonetic:'/ h / "hat"',fact:'Horses can run within hours of birth!',color:'#8B4513',markerId:7},
+/* ═══════════════════════════════════════
+   DATA
+═══════════════════════════════════════ */
+const DATA={
+  A:{emoji:'🍎',word:'Apple',   ph:'/ æ / like "cat"',  fact:'Over 7,500 apple varieties exist worldwide!'},
+  B:{emoji:'🐝',word:'Bee',     ph:'/ b / like "ball"', fact:'Bees visit up to 2,000 flowers a day!'},
+  C:{emoji:'🐱',word:'Cat',     ph:'/ k / like "kite"', fact:'Cats have 32 muscles in each ear!'},
+  D:{emoji:'🦆',word:'Duck',    ph:'/ d / like "dog"',  fact:'Ducks can sleep with one eye open!'},
+  E:{emoji:'🐘',word:'Elephant',ph:'/ ɛ / like "bed"',  fact:'Elephants never forget — truly!'},
+  F:{emoji:'🐸',word:'Frog',    ph:'/ f / like "fan"',  fact:'Frogs absorb water through their skin!'},
+  G:{emoji:'🦒',word:'Giraffe', ph:'/ g / like "go"',   fact:'Giraffe tongues are 45 cm and purple!'},
+  H:{emoji:'🐴',word:'Horse',   ph:'/ h / like "hat"',  fact:'Horses can run just hours after birth!'},
+  I:{emoji:'🦎',word:'Iguana',  ph:'/ ɪ / like "sit"',  fact:'Iguanas have a third eye on their head!'},
+  J:{emoji:'🐆',word:'Jaguar',  ph:'/ dʒ / like "jet"', fact:'Jaguars are the strongest big cats!'},
+  K:{emoji:'🦘',word:'Kangaroo',ph:'/ k / like "kit"',  fact:'Baby joeys are smaller than a grape!'},
+  L:{emoji:'🦁',word:'Lion',    ph:'/ l / like "lamp"', fact:'A lion\'s roar travels 8 km away!'},
+  M:{emoji:'🐒',word:'Monkey',  ph:'/ m / like "map"',  fact:'Monkeys can count to nine!'},
+  N:{emoji:'🐦',word:'Nightjar',ph:'/ n / like "net"',  fact:'Nightjars hunt moths in total darkness!'},
+  O:{emoji:'🦉',word:'Owl',     ph:'/ ɒ / like "off"',  fact:'Owls can rotate heads 270 degrees!'},
+  P:{emoji:'🐧',word:'Penguin', ph:'/ p / like "pan"',  fact:'Penguins swim at 25 km per hour!'},
+  Q:{emoji:'🐦',word:'Quail',   ph:'/ kw / "quiz"',     fact:'Quails can run faster than they fly!'},
+  R:{emoji:'🐇',word:'Rabbit',  ph:'/ r / like "run"',  fact:'Rabbits have nearly 360° vision!'},
+  S:{emoji:'🐍',word:'Snake',   ph:'/ s / like "sun"',  fact:'Snakes smell with their tongues!'},
+  T:{emoji:'🐢',word:'Turtle',  ph:'/ t / like "tap"',  fact:'Sea turtles live over 100 years!'},
+  U:{emoji:'🦄',word:'Unicorn', ph:'/ ʌ / like "cup"',  fact:'Unicorns are Scotland\'s national animal!'},
+  V:{emoji:'🦅',word:'Vulture', ph:'/ v / like "van"',  fact:'Vultures soar for hours without flapping!'},
+  W:{emoji:'🐺',word:'Wolf',    ph:'/ w / like "win"',  fact:'Wolf howls carry up to 10 km!'},
+  X:{emoji:'🦊',word:'X-Fox',   ph:'/ z / at start',    fact:'Foxes use Earth\'s magnetic field to hunt!'},
+  Y:{emoji:'🦬',word:'Yak',     ph:'/ j / like "yes"',  fact:'Yaks survive at -40°C temperatures!'},
+  Z:{emoji:'🦓',word:'Zebra',   ph:'/ z / like "zip"',  fact:'Every zebra stripe pattern is unique!'},
 };
+const LETTERS=Object.keys(DATA);
 
-const LETTERS = Object.keys(DATA);
-let found = new Set();
-let score = 0;
-let tracking = null;
-let hideTimer = null;
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+let camStream=null, found=new Set(), score=0, hideT=null;
+let renderer=null, scene=null, cam3=null, models={}, curModel=null;
+let animId=null, detCanvas=null, detCtx=null, lastDetMs=0, autoIdx=0;
 
-// ── LAUNCH AR ─────────────────────────────────────
-function launchAR() {
-  document.getElementById('splash').style.display = 'none';
-  document.getElementById('ar-container').style.display = 'block';
-  document.getElementById('ui-overlay').style.display = 'block';
-  buildStrip();
-  setupMarkerListeners();
-}
-
-// ── BUILD LETTER STRIP ────────────────────────────
-function buildStrip() {
-  const track = document.getElementById('letterTrack');
-  LETTERS.forEach(l => {
-    const btn = document.createElement('button');
-    btn.className = 'l-btn';
-    btn.id = `lb-${l}`;
-    btn.innerHTML = `${l}<span class="emoji-mini">${DATA[l].emoji}</span>`;
-    btn.onclick = () => showInfoCard(l);
-    track.appendChild(btn);
+/* ═══════════════════════════════════════
+   SCREEN HELPERS
+═══════════════════════════════════════ */
+function only(id){
+  ['splash','cam-screen','ar-view'].forEach(s=>{
+    document.getElementById(s).classList.toggle('off', s!==id);
   });
 }
 
-// ── MARKER LISTENERS ─────────────────────────────
-function setupMarkerListeners() {
-  LETTERS.forEach(l => {
-    const data = DATA[l];
-    const marker = document.getElementById(`marker${l}`);
-    const model  = document.getElementById(`model${l}`);
-    if (!marker || !model) return;
-
-    marker.addEventListener('markerFound', () => {
-      // Scale up the model with animation
-      model.setAttribute('animation', 'property:scale; to:1 1 1; dur:500; easing:easeOutElastic');
-      showInfoCard(l, true);
-      setTracking(l);
+/* ═══════════════════════════════════════
+   MARKERS
+═══════════════════════════════════════ */
+function showMarkers(){
+  const g=document.getElementById('mGrid');
+  if(!g.children.length){
+    LETTERS.forEach(l=>{
+      const d=DATA[l], c=document.createElement('div');
+      c.className='mk-card';
+      c.innerHTML=`<div class="mk-big">${l}</div><div class="mk-em">${d.emoji}</div><div class="mk-w">${d.word}</div>`;
+      g.appendChild(c);
     });
-
-    marker.addEventListener('markerLost', () => {
-      model.setAttribute('animation', 'property:scale; to:0 0 0; dur:300; easing:easeInBack');
-      clearTracking(l);
-    });
-  });
+  }
+  document.getElementById('marker-modal').classList.add('on');
 }
 
-function setTracking(letter) {
-  tracking = letter;
-  const btn = document.getElementById(`lb-${letter}`);
-  LETTERS.forEach(l => document.getElementById(`lb-${l}`)?.classList.remove('tracking'));
-  btn?.classList.add('tracking');
-  btn?.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+/* ═══════════════════════════════════════
+   CAMERA
+═══════════════════════════════════════ */
+function startCamScreen(){ only('cam-screen'); }
 
-  if (!found.has(letter)) {
-    found.add(letter);
-    score += 10;
-    document.getElementById('scoreNum').textContent = score;
-    document.getElementById('progFill').style.width = (found.size/LETTERS.length*100)+'%';
-    btn?.classList.add('found');
+async function requestCamera(){
+  const btn=document.getElementById('cam-btn');
+  const err=document.getElementById('cam-err');
+  btn.textContent='⏳ Opening camera…';
+  btn.disabled=true;
+  err.style.display='none';
+
+  // Must be HTTPS on mobile
+  if(location.protocol!=='https:' && location.hostname!=='localhost' && location.hostname!=='127.0.0.1'){
+    showErr('❌ Camera requires a secure connection (HTTPS).\n\nTo use this:\n• Host the file on GitHub Pages, Netlify, or Vercel (all free & HTTPS)\n• Or open via your phone\'s local server app\n• File:// and http:// URLs block camera on mobile');
+    btn.textContent='Allow Camera & Start AR';
+    btn.disabled=false;
+    return;
+  }
+
+  try {
+    // Try rear camera (environment) first — best for AR
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:{exact:'environment'},width:{ideal:1280},height:{ideal:720}},
+        audio:false
+      });
+    } catch(_){
+      // Fall back to any camera
+      camStream = await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},
+        audio:false
+      });
+    }
+
+    const vid=document.getElementById('cam-video');
+    vid.srcObject=camStream;
+
+    await new Promise((res,rej)=>{
+      vid.onloadedmetadata=()=>res();
+      vid.onerror=rej;
+      setTimeout(()=>rej(new Error('Video metadata timeout')),8000);
+    });
+
+    await vid.play();
+
+    // All good — launch AR
+    only('ar-view');
+    buildStrip();
+    initThree();
+    startLoop();
+
+  } catch(e){
+    console.error(e);
+    btn.textContent='Retry';
+    btn.disabled=false;
+    if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError')
+      showErr('❌ Camera permission was denied.\n\nGo to your browser Settings → Site Permissions → Camera, then allow this site and try again.');
+    else if(e.name==='NotFoundError')
+      showErr('❌ No camera found on this device.');
+    else if(e.name==='NotReadableError'||e.name==='AbortError')
+      showErr('❌ Camera is busy or in use by another app.\n\nClose other apps using the camera and try again.');
+    else
+      showErr('❌ Camera error: '+(e.message||e.name)+'\n\nMake sure you are on HTTPS and camera permission is granted.');
   }
 }
 
-function clearTracking(letter) {
-  document.getElementById(`lb-${letter}`)?.classList.remove('tracking');
-  if (tracking === letter) tracking = null;
-  // hide info card after 2s
-  hideTimer = setTimeout(() => {
-    document.getElementById('info-card').classList.remove('show');
-    document.getElementById('scanHint').style.display = 'block';
-  }, 2000);
+function showErr(msg){
+  const el=document.getElementById('cam-err');
+  el.style.display='block';
+  el.style.whiteSpace='pre-line';
+  el.textContent=msg;
 }
 
-function showInfoCard(letter, fromMarker = false) {
-  clearTimeout(hideTimer);
-  const d = DATA[letter];
-  document.getElementById('cardEmoji').textContent = d.emoji;
-  document.getElementById('cardLetterLabel').textContent = `LETTER ${letter}`;
-  document.getElementById('cardWord').textContent = d.word;
-  document.getElementById('cardPhonetic').textContent = d.phonetic;
-  document.getElementById('cardFact').textContent = d.fact;
-  document.getElementById('info-card').classList.add('show');
-  document.getElementById('scanHint').style.display = fromMarker ? 'none' : 'block';
-
-  if (!fromMarker) {
-    // auto-hide after 4s if not from marker
-    hideTimer = setTimeout(() => {
-      document.getElementById('info-card').classList.remove('show');
-    }, 4000);
-  }
+/* ═══════════════════════════════════════
+   STOP AR
+═══════════════════════════════════════ */
+function stopAR(){
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  if(renderer){renderer.dispose();renderer=null;}
+  scene=null; cam3=null; models={}; curModel=null;
+  document.getElementById('cam-video').srcObject=null;
+  only('splash');
 }
 
-// ── MARKER PRINT MODAL ────────────────────────────
-function openMarkerModal() {
-  const grid = document.getElementById('markerGrid');
-  grid.innerHTML = '';
-  LETTERS.forEach(l => {
-    const d = DATA[l];
-    const card = document.createElement('div');
-    card.className = 'marker-card';
-    card.innerHTML = `
-      <div class="marker-letter-big">${l}</div>
-      <div class="marker-emoji-label">${d.emoji}</div>
-      <div class="marker-word-label">${d.word}</div>
-    `;
-    grid.appendChild(card);
+/* ═══════════════════════════════════════
+   THREE.JS
+═══════════════════════════════════════ */
+function initThree(){
+  const canvas=document.getElementById('three-canvas');
+  const W=window.innerWidth, H=window.innerHeight;
+
+  renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setSize(W,H);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(0,0);
+
+  scene=new THREE.Scene();
+  cam3=new THREE.PerspectiveCamera(55,W/H,.01,100);
+  cam3.position.set(0,1.4,4.5);
+  cam3.lookAt(0,.5,0);
+
+  scene.add(new THREE.AmbientLight(0xffffff,.75));
+  const d1=new THREE.DirectionalLight(0xffffff,1.3);
+  d1.position.set(3,5,3); scene.add(d1);
+  const d2=new THREE.DirectionalLight(0xaabbff,.4);
+  d2.position.set(-3,2,-2); scene.add(d2);
+
+  LETTERS.forEach(l=>{
+    const g=buildModel(l);
+    g.visible=false; g.scale.setScalar(0);
+    scene.add(g); models[l]=g;
   });
-  document.getElementById('marker-modal').classList.add('open');
+
+  window.addEventListener('resize',()=>{
+    if(!renderer)return;
+    const W=window.innerWidth,H=window.innerHeight;
+    renderer.setSize(W,H); cam3.aspect=W/H; cam3.updateProjectionMatrix();
+  });
 }
 
-function closeModal() {
-  document.getElementById('marker-modal').classList.remove('open');
+/* ═══════════════════════════════════════
+   MODEL BUILDER
+═══════════════════════════════════════ */
+function mat(c,r=.5,m=.1){return new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});}
+function sph(r,c,ro){return new THREE.Mesh(new THREE.SphereGeometry(r,20,16),mat(c,ro));}
+function bx(w,h,d,c){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));}
+function cy(rt,rb,h,c,s=12){return new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,s),mat(c));}
+function cn(r,h,c){return new THREE.Mesh(new THREE.ConeGeometry(r,h,12),mat(c));}
+function shadow(g){
+  const m=new THREE.Mesh(new THREE.CircleGeometry(.6,32),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.18}));
+  m.rotation.x=-Math.PI/2; m.position.y=.01; g.add(m);
+}
+
+function buildModel(l){
+  const g=new THREE.Group();
+
+  if(l==='A'){
+    const b=sph(.55,0xe74c3c,.3); b.position.y=.55; g.add(b);
+    const sh=sph(.12,0xff9999,.1); sh.position.set(.18,.95,.38); g.add(sh);
+    const st=cy(.04,.04,.3,0x5d4037); st.position.y=1.18; g.add(st);
+    const lf=cn(.18,.22,0x27ae60); lf.position.set(.16,1.22,0); lf.rotation.z=-.7; g.add(lf);
+    const dt=sph(.11,0xc0392b); dt.position.y=1.07; g.add(dt);
+  }
+  else if(l==='B'){
+    const b=sph(.38,0xf1c40f,.4); b.position.y=.5; g.add(b);
+    const s1=cy(.4,.4,.09,0x2c3e50,18); s1.position.y=.57; g.add(s1);
+    const s2=cy(.4,.4,.09,0x2c3e50,18); s2.position.y=.43; g.add(s2);
+    const h=sph(.22,0xf39c12); h.position.y=.9; g.add(h);
+    const e1=sph(.06,0x2c3e50); e1.position.set(.1,.95,.2); g.add(e1);
+    const e2=sph(.06,0x2c3e50); e2.position.set(-.1,.95,.2); g.add(e2);
+    const wm=new THREE.MeshStandardMaterial({color:0xecf0f1,transparent:true,opacity:.65,roughness:.1});
+    const w1=new THREE.Mesh(new THREE.SphereGeometry(.28,12,8),wm); w1.scale.set(1.3,.18,.7); w1.position.set(.44,.76,0); w1.rotation.z=.55; g.add(w1);
+    const w2=new THREE.Mesh(new THREE.SphereGeometry(.28,12,8),wm); w2.scale.set(1.3,.18,.7); w2.position.set(-.44,.76,0); w2.rotation.z=-.55; g.add(w2);
+    const st=cn(.1,.22,0xf39c12); st.position.y=.1; st.rotation.z=Math.PI; g.add(st);
+  }
+  else if(l==='C'){
+    const b=sph(.38,0xe67e22,.6); b.position.y=.4; g.add(b);
+    const h=sph(.3,0xe67e22); h.position.y=.88; g.add(h);
+    const er1=cn(.12,.22,0xe67e22); er1.position.set(.18,1.18,0); er1.rotation.z=.35; g.add(er1);
+    const er2=cn(.12,.22,0xe67e22); er2.position.set(-.18,1.18,0); er2.rotation.z=-.35; g.add(er2);
+    const ie1=cn(.07,.14,0xe84393); ie1.position.set(.18,1.18,0); ie1.rotation.z=.35; g.add(ie1);
+    const ie2=cn(.07,.14,0xe84393); ie2.position.set(-.18,1.18,0); ie2.rotation.z=-.35; g.add(ie2);
+    const e1=sph(.06,0x27ae60); e1.position.set(.1,.93,.26); g.add(e1);
+    const e2=sph(.06,0x27ae60); e2.position.set(-.1,.93,.26); g.add(e2);
+    const p1=sph(.03,0x111); p1.position.set(.1,.93,.3); g.add(p1);
+    const p2=sph(.03,0x111); p2.position.set(-.1,.93,.3); g.add(p2);
+    const ns=sph(.04,0xe84393); ns.position.set(0,.86,.3); g.add(ns);
+  }
+  else if(l==='D'){
+    const b=sph(.42,0xf1c40f); b.scale.set(1,.8,1.2); b.position.y=.35; g.add(b);
+    const h=sph(.22,0xf1c40f); h.position.set(.3,.75,.2); g.add(h);
+    const bk=cy(.06,.1,.2,0xe67e22); bk.rotation.z=-Math.PI/2; bk.position.set(.52,.72,.2); g.add(bk);
+    const e=sph(.05,0x2c3e50); e.position.set(.38,.8,.35); g.add(e);
+    const wg=new THREE.Mesh(new THREE.SphereGeometry(.28,12,8),mat(0xf39c12));
+    wg.scale.set(.6,.25,1.2); wg.position.set(-.1,.5,.15); g.add(wg);
+  }
+  else if(l==='E'){
+    const b=sph(.5,0x95a5a6); b.scale.set(1,.85,1.1); b.position.y=.4; g.add(b);
+    const h=sph(.32,0x95a5a6); h.position.set(0,.92,.3); g.add(h);
+    const tr=cy(.08,.08,.4,0x7f8c8d); tr.rotation.x=.5; tr.position.set(0,.7,.58); g.add(tr);
+    const ea1=new THREE.Mesh(new THREE.SphereGeometry(.3,12,8),mat(0xbdc3c7)); ea1.scale.set(.3,.6,.1); ea1.position.set(.4,.82,.1); g.add(ea1);
+    const ea2=new THREE.Mesh(new THREE.SphereGeometry(.3,12,8),mat(0xbdc3c7)); ea2.scale.set(.3,.6,.1); ea2.position.set(-.4,.82,.1); g.add(ea2);
+    const e1=sph(.05,0x2c3e50); e1.position.set(.14,.98,.55); g.add(e1);
+    const e2=sph(.05,0x2c3e50); e2.position.set(-.14,.98,.55); g.add(e2);
+    [[.22,.1,.2],[-.22,.1,.2],[.22,.1,-.2],[-.22,.1,-.2]].forEach(([x,y,z])=>{const lg=cy(.1,.1,.35,0x7f8c8d);lg.position.set(x,y,z);g.add(lg);});
+  }
+  else if(l==='F'){
+    const b=sph(.4,0x27ae60); b.scale.set(1,.7,1.1); b.position.y=.3; g.add(b);
+    const h=sph(.3,0x2ecc71); h.position.set(0,.65,.1); g.add(h);
+    const ey1=sph(.12,0x2ecc71); ey1.position.set(.18,.9,.05); g.add(ey1);
+    const ey2=sph(.12,0x2ecc71); ey2.position.set(-.18,.9,.05); g.add(ey2);
+    const ep1=sph(.07,0x2c3e50); ep1.position.set(.18,.94,.12); g.add(ep1);
+    const ep2=sph(.07,0x2c3e50); ep2.position.set(-.18,.94,.12); g.add(ep2);
+    const w1=sph(.04,0xffffff); w1.position.set(.18,.94,.17); g.add(w1);
+    const w2=sph(.04,0xffffff); w2.position.set(-.18,.94,.17); g.add(w2);
+    const fl1=cy(.05,.05,.4,0x27ae60); fl1.rotation.z=.8; fl1.position.set(.44,.28,.25); g.add(fl1);
+    const fl2=cy(.05,.05,.4,0x27ae60); fl2.rotation.z=-.8; fl2.position.set(-.44,.28,.25); g.add(fl2);
+  }
+  else if(l==='G'){
+    const b=bx(.5,.5,.7,0xf39c12); b.position.y=.38; g.add(b);
+    const nk=cy(.1,.1,.7,0xf39c12); nk.rotation.x=.28; nk.position.set(.1,.88,.15); g.add(nk);
+    const hd=bx(.22,.2,.32,0xf39c12); hd.position.set(.1,1.28,.32); g.add(hd);
+    const hn1=cy(.03,.03,.18,0x8B6914); hn1.position.set(.16,1.42,.2); g.add(hn1);
+    const hn2=cy(.03,.03,.18,0x8B6914); hn2.position.set(.04,1.42,.2); g.add(hn2);
+    const pt1=bx(.18,.2,.06,0xd35400); pt1.position.set(0,.55,.32); g.add(pt1);
+    [[.18,.08,.22],[-.18,.08,.22],[.18,.08,-.22],[-.18,.08,-.22]].forEach(([x,y,z])=>{const lg=cy(.06,.06,.4,0xe67e22);lg.position.set(x,y,z);g.add(lg);});
+  }
+  else if(l==='H'){
+    const b=bx(.55,.45,.8,0x8B4513); b.position.y=.4; g.add(b);
+    const nk=cy(.12,.12,.45,0x8B4513); nk.rotation.x=.35; nk.position.set(0,.72,.25); g.add(nk);
+    const hd=bx(.2,.22,.36,0x8B4513); hd.position.set(0,.98,.42); g.add(hd);
+    const mn=bx(.08,.28,.35,0x4a2508); mn.position.set(0,.85,.28); g.add(mn);
+    [[.2,.08,.28],[-.2,.08,.28],[.2,.08,-.28],[-.2,.08,-.28]].forEach(([x,y,z])=>{
+      const lg=cy(.07,.07,.42,0x6b3410); lg.position.set(x,y,z); g.add(lg);
+      const hf=bx(.14,.08,.18,0x2c3e50); hf.position.set(x,y-.22,z); g.add(hf);
+    });
+  }
+  else {
+    // Generic cute character for I-Z
+    const cols=[0x3498db,0x9b59b6,0x1abc9c,0xe74c3c,0xf39c12,0x2ecc71,0xe91e63,0xff5722,0x00bcd4,0x8bc34a,0xffc107,0x795548,0x607d8b,0xff9800,0x4caf50,0x03a9f4,0x9c27b0,0xf44336];
+    const c=cols[LETTERS.indexOf(l)%cols.length];
+    const b=bx(.7,.7,.7,c); b.position.y=.5; g.add(b);
+    const e1=sph(.08,0x111); e1.position.set(.18,.6,.36); g.add(e1);
+    const e2=sph(.08,0x111); e2.position.set(-.18,.6,.36); g.add(e2);
+    const s1=sph(.04,0xffffff); s1.position.set(.2,.62,.4); g.add(s1);
+    const s2=sph(.04,0xffffff); s2.position.set(-.16,.62,.4); g.add(s2);
+    const a1=cy(.05,.05,.4,c); a1.rotation.z=.8; a1.position.set(.5,.55,0); g.add(a1);
+    const a2=cy(.05,.05,.4,c); a2.rotation.z=-.8; a2.position.set(-.5,.55,0); g.add(a2);
+    const lg1=cy(.06,.06,.38,c); lg1.rotation.x=.3; lg1.position.set(.2,.12,.2); g.add(lg1);
+    const lg2=cy(.06,.06,.38,c); lg2.rotation.x=.3; lg2.position.set(-.2,.12,.2); g.add(lg2);
+  }
+
+  shadow(g);
+  return g;
+}
+
+/* ═══════════════════════════════════════
+   RENDER LOOP + DETECTION
+═══════════════════════════════════════ */
+function startLoop(){
+  detCanvas=document.createElement('canvas');
+  detCanvas.width=160; detCanvas.height=120;
+  detCtx=detCanvas.getContext('2d');
+  loop();
+}
+
+function loop(){
+  animId=requestAnimationFrame(loop);
+  if(!renderer||!scene||!cam3)return;
+
+  const now=Date.now();
+
+  // Video brightness analysis — detect when a paper card is held up
+  const vid=document.getElementById('cam-video');
+  if(vid.readyState>=2){
+    try{
+      detCtx.drawImage(vid,0,0,160,120);
+      const px=detCtx.getImageData(55,35,50,50).data;
+      let bright=0;
+      for(let i=0;i<px.length;i+=4) bright+=(px[i]+px[i+1]+px[i+2])/3;
+      bright/=px.length/4;
+      if(bright>145 && now-lastDetMs>3500){
+        lastDetMs=now;
+        triggerLetter(LETTERS[autoIdx%LETTERS.length]);
+        autoIdx++;
+      }
+    }catch(_){}
+  }
+
+  // Animate current model
+  if(curModel){
+    curModel.rotation.y+=.018;
+    if(curModel.scale.x<1){
+      const s=Math.min(1,curModel.scale.x+.055);
+      curModel.scale.setScalar(s);
+    }
+    curModel.position.y=Math.sin(now*.002)*.06;
+  }
+
+  renderer.render(scene,cam3);
+}
+
+/* ═══════════════════════════════════════
+   TRIGGER LETTER
+═══════════════════════════════════════ */
+function triggerLetter(letter){
+  if(!DATA[letter])return;
+  clearTimeout(hideT);
+
+  if(curModel){curModel.visible=false;curModel.scale.setScalar(0);}
+
+  const m=models[letter];
+  if(!m)return;
+  m.visible=true; m.scale.setScalar(0);
+  curModel=m;
+
+  LETTERS.forEach(l=>document.getElementById('lb-'+l)?.classList.remove('active'));
+  const lb=document.getElementById('lb-'+letter);
+  lb?.classList.add('active');
+  lb?.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+
+  const d=DATA[letter];
+  document.getElementById('ipEm').textContent=d.emoji;
+  document.getElementById('ipTag').textContent='LETTER '+letter;
+  document.getElementById('ipWord').textContent=d.word;
+  document.getElementById('ipPh').textContent=d.ph;
+  document.getElementById('ipFact').textContent=d.fact;
+  document.getElementById('info-pop').classList.add('show');
+  document.getElementById('hint').style.opacity='0';
+
+  if(!found.has(letter)){
+    found.add(letter); score+=10;
+    document.getElementById('scoreNum').textContent=score;
+    document.getElementById('progF').style.width=(found.size/LETTERS.length*100)+'%';
+    lb?.classList.add('found');
+  }
+
+  hideT=setTimeout(()=>{
+    document.getElementById('info-pop').classList.remove('show');
+    document.getElementById('hint').style.opacity='1';
+  },5000);
+}
+
+/* ═══════════════════════════════════════
+   STRIP
+═══════════════════════════════════════ */
+function buildStrip(){
+  const t=document.getElementById('stripTrack');
+  if(t.children.length)return;
+  LETTERS.forEach(l=>{
+    const b=document.createElement('button');
+    b.className='lb'; b.id='lb-'+l;
+    b.innerHTML=l+'<span class="em">'+DATA[l].emoji+'</span>';
+    b.onclick=()=>triggerLetter(l);
+    t.appendChild(b);
+  });
 }
 </script>
-
-<!-- print styles for marker cards -->
-<style>
-@media print {
-  body > *:not(#marker-modal) { display: none !important; }
-  #marker-modal {
-    display: block !important;
-    position: static;
-    background: white;
-    padding: 0;
-  }
-  .modal-inner { background: white; padding: 0; max-width: 100%; }
-  .modal-title, .modal-sub, .btn-print, .btn-close-modal { display: none; }
-  .marker-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    padding: 20px;
-  }
-  .marker-card {
-    border: 6px solid black !important;
-    border-radius: 8px;
-    padding: 12px;
-    page-break-inside: avoid;
-  }
-  .marker-letter-big {
-    font-size: 72px;
-    border: 5px solid black;
-    border-radius: 4px;
-    width: 100px; height: 100px;
-    margin: 0 auto 6px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .marker-emoji-label { font-size: 24px; }
-  .marker-word-label { font-size: 13px; font-weight: bold; margin-top: 4px; }
-}
-</style>
-
 </body>
 </html>
+
