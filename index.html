@@ -6,54 +6,46 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AR Alphabet 3D</title>
-
-<!-- Three.js -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<!-- MindAR - image marker tracking -->
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nunito',sans-serif;}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;font-family:'Nunito',sans-serif;}
 
-/* SCREENS */
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .screen.off{display:none!important;}
 
-/* SPLASH */
+/* ── SPLASH ── */
 #splash{background:linear-gradient(160deg,#0f0f23,#1a1a3e,#0d2d50);padding:28px 22px;gap:14px;text-align:center;overflow-y:auto;}
-.logo-wrap{position:relative;width:90px;height:90px;margin:0 auto;}
-.logo-ring{width:90px;height:90px;border-radius:50%;background:conic-gradient(#FF6B6B,#FFE66D,#4ECDC4,#FF6B6B);animation:spin 4s linear infinite;display:flex;align-items:center;justify-content:center;}
+.logo-ring{width:88px;height:88px;border-radius:50%;background:conic-gradient(#FF6B6B,#FFE66D,#4ECDC4,#FF6B6B);animation:spin 4s linear infinite;display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto;}
+.logo-inner{position:absolute;inset:6px;border-radius:50%;background:#1a1a3e;display:flex;align-items:center;justify-content:center;font-size:36px;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.logo-inner{position:absolute;inset:6px;border-radius:50%;background:#1a1a3e;display:flex;align-items:center;justify-content:center;font-size:38px;}
 .s-title{font-family:'Fredoka One',sans-serif;font-size:28px;background:linear-gradient(135deg,#FF6B6B,#FFE66D,#4ECDC4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .s-sub{font-size:13px;color:rgba(255,255,255,.6);line-height:1.5;max-width:280px;}
 .steps-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px 16px;width:100%;max-width:320px;text-align:left;}
 .step{display:flex;gap:10px;font-size:12px;color:rgba(255,255,255,.8);line-height:1.4;margin-bottom:10px;align-items:flex-start;}
 .step:last-child{margin-bottom:0;}
-.sn{min-width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#FFE66D);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',sans-serif;font-size:12px;color:#1a1a2e;}
-.btn{width:100%;max-width:320px;border:none;border-radius:50px;padding:15px;font-family:'Fredoka One',sans-serif;font-size:19px;cursor:pointer;transition:transform .15s,opacity .15s;}
-.btn:active{transform:scale(.96);opacity:.85;}
+.sn{min-width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#FFE66D);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',sans-serif;font-size:12px;color:#1a1a2e;margin-top:1px;}
+.btn{width:100%;max-width:320px;border:none;border-radius:50px;padding:15px;font-family:'Fredoka One',sans-serif;font-size:19px;cursor:pointer;transition:transform .15s;}
+.btn:active{transform:scale(.96);}
 .btn-teal{background:linear-gradient(135deg,#4ECDC4,#38b2a8);color:#0f2322;box-shadow:0 6px 20px rgba(78,205,196,.4);}
 .btn-red{background:linear-gradient(135deg,#FF6B6B,#ff4444);color:#fff;box-shadow:0 6px 20px rgba(255,107,107,.45);}
 .btn-ghost{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.65);}
 
-/* MARKER MODAL */
+/* ── MARKER MODAL ── */
 #marker-modal{position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:99999;overflow-y:auto;padding:20px 14px;display:none;flex-direction:column;align-items:center;gap:10px;}
 #marker-modal.on{display:flex;}
 .m-title{font-family:'Fredoka One',sans-serif;font-size:22px;color:#fff;}
 .m-sub{font-size:12px;color:rgba(255,255,255,.5);text-align:center;line-height:1.5;max-width:320px;}
 .marker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:400px;}
-.mk-card{background:#fff;border-radius:10px;border:5px solid #111;padding:8px 4px 6px;text-align:center;position:relative;}
-.mk-ar-border{position:absolute;inset:3px;border:3px solid #000;border-radius:4px;pointer-events:none;}
-.mk-big{font-family:'Fredoka One',sans-serif;font-size:44px;color:#111;line-height:1;border:3px solid #111;border-radius:6px;width:60px;height:60px;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;background:#fff;}
+.mk-card{background:#fff;border-radius:10px;border:5px solid #111;padding:8px 4px 6px;text-align:center;}
+.mk-big{font-family:'Fredoka One',sans-serif;font-size:44px;color:#111;line-height:1;border:3px solid #111;border-radius:6px;width:60px;height:60px;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;}
 .mk-em{font-size:16px;display:block;}
-.mk-w{font-size:9px;font-weight:800;color:#333;margin-top:1px;text-transform:uppercase;letter-spacing:.5px;}
+.mk-w{font-size:9px;font-weight:800;color:#333;margin-top:1px;text-transform:uppercase;}
 .btn-print{background:#4ECDC4;border:none;border-radius:12px;padding:13px;font-family:'Fredoka One',sans-serif;font-size:16px;color:#0f2322;cursor:pointer;width:100%;max-width:400px;}
 .btn-back-m{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px;font-family:'Fredoka One',sans-serif;font-size:16px;color:rgba(255,255,255,.6);cursor:pointer;width:100%;max-width:400px;}
 
-/* CAM SCREEN */
+/* ── CAM SCREEN ── */
 #cam-screen{background:linear-gradient(160deg,#0f0f23,#1a1a3e);gap:16px;padding:30px 22px;text-align:center;}
 .cam-icon{font-size:68px;animation:pb 2s ease-in-out infinite;}
 @keyframes pb{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
@@ -61,990 +53,800 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nu
 .cam-sub{font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;max-width:270px;}
 #cam-err{color:#ff6b6b;font-size:12px;font-weight:700;max-width:280px;display:none;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);border-radius:10px;padding:10px 12px;line-height:1.5;white-space:pre-line;}
 
-/* AR CONTAINER */
-#ar-container{position:fixed;inset:0;display:none;}
-#ar-container.on{display:block;}
+/* ── AR VIEW ── */
+#ar-view{background:#000;}
+#cam-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+#three-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
 
-/* AR CANVAS (MindAR renders here) */
-#mindar-canvas{position:absolute;inset:0;width:100%!important;height:100%!important;}
-
-/* HUD OVERLAY */
+/* HUD */
 #hud{position:fixed;inset:0;pointer-events:none;z-index:500;}
-
-.hud-top{position:absolute;top:0;left:0;right:0;padding:44px 14px 10px;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);display:flex;align-items:center;justify-content:space-between;pointer-events:all;}
+.hud-top{position:absolute;top:0;left:0;right:0;padding:44px 14px 10px;background:linear-gradient(to bottom,rgba(0,0,0,.82),transparent);display:flex;align-items:center;justify-content:space-between;pointer-events:all;}
 .hud-title{font-family:'Fredoka One',sans-serif;font-size:17px;background:linear-gradient(135deg,#FF6B6B,#FFE66D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .hud-right{display:flex;align-items:center;gap:8px;}
-.score-badge{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:5px 12px;font-family:'Fredoka One',sans-serif;font-size:14px;color:#FFE66D;}
+.score-pill{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:5px 12px;font-family:'Fredoka One',sans-serif;font-size:14px;color:#FFE66D;}
 .exit-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:6px 12px;font-size:12px;font-weight:800;color:#fff;cursor:pointer;pointer-events:all;}
 
-/* Scanning frame */
-.scan-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);width:200px;height:200px;pointer-events:none;}
-.corner{position:absolute;width:28px;height:28px;border-color:#4ECDC4;border-style:solid;}
-.corner.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:5px 0 0 0;}
-.corner.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 5px 0 0;}
-.corner.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 5px;}
-.corner.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 5px 0;}
-.scan-line{position:absolute;left:5px;right:5px;height:2px;background:linear-gradient(90deg,transparent,#4ECDC4,transparent);top:5px;animation:sl 1.8s ease-in-out infinite;}
+/* Scan ring */
+.scan-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:210px;height:210px;pointer-events:none;}
+.cr{position:absolute;width:28px;height:28px;border-color:#4ECDC4;border-style:solid;}
+.cr.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:5px 0 0 0;}
+.cr.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 5px 0 0;}
+.cr.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 5px;}
+.cr.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 5px 0;}
+.scan-ln{position:absolute;left:5px;right:5px;height:2px;background:linear-gradient(90deg,transparent,#4ECDC4,transparent);animation:sl 1.8s ease-in-out infinite;}
 @keyframes sl{0%,100%{top:5px;opacity:.4}50%{top:calc(100% - 7px);opacity:1}}
-.scan-label{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:rgba(78,205,196,.9);white-space:nowrap;letter-spacing:.5px;}
+.scan-lbl{position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:rgba(78,205,196,.9);white-space:nowrap;letter-spacing:.5px;}
 
-/* Info card - slides in from top */
-#info-card{position:absolute;top:90px;left:10px;right:10px;background:rgba(8,8,24,.9);backdrop-filter:blur(20px);border:1.5px solid rgba(78,205,196,.5);border-radius:20px;padding:14px 16px;display:flex;gap:12px;align-items:center;pointer-events:none;transform:translateY(-20px) scale(.95);opacity:0;transition:all .45s cubic-bezier(.34,1.56,.64,1);}
-#info-card.show{transform:translateY(0) scale(1);opacity:1;}
-.ic-emoji{font-size:50px;flex-shrink:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));}
+/* Detected! badge */
+#det-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:rgba(78,205,196,.95);border-radius:50px;padding:10px 22px;font-family:'Fredoka One',sans-serif;font-size:18px;color:#0f2322;white-space:nowrap;pointer-events:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+#det-badge.pop{transform:translate(-50%,-50%) scale(1);}
+
+/* Info card */
+#info-card{position:absolute;top:92px;left:10px;right:10px;background:rgba(8,8,24,.92);backdrop-filter:blur(20px);border:1.5px solid rgba(78,205,196,.5);border-radius:20px;padding:14px 16px;display:flex;gap:12px;align-items:center;pointer-events:none;transform:translateY(-20px) scale(.95);opacity:0;transition:all .45s cubic-bezier(.34,1.56,.64,1);}
+#info-card.show{transform:translateY(0) scale(1);opacity:1;pointer-events:all;}
+.ic-em{font-size:48px;flex-shrink:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));}
 .ic-body{flex:1;min-width:0;}
-.ic-letter{font-family:'Fredoka One',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:2px;}
+.ic-tag{font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:2px;}
 .ic-word{font-family:'Fredoka One',sans-serif;font-size:26px;color:#fff;line-height:1.1;}
 .ic-ph{display:inline-flex;align-items:center;gap:4px;background:rgba(78,205,196,.18);border:1px solid rgba(78,205,196,.3);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;color:#4ECDC4;margin:3px 0;}
 .ic-fact{font-size:11px;color:rgba(255,255,255,.6);line-height:1.4;margin-top:2px;}
-.ic-sound-btn{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#ff8e53);border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;pointer-events:all;box-shadow:0 3px 10px rgba(255,107,107,.4);}
+.ic-sound{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#ff8e53);border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;pointer-events:all;box-shadow:0 3px 10px rgba(255,107,107,.4);}
 
-/* Controls */
-#controls{position:absolute;bottom:155px;right:14px;display:flex;flex-direction:column;gap:8px;pointer-events:all;}
-.ctrl-btn{width:44px;height:44px;background:rgba(0,0,0,.55);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);border-radius:14px;font-size:18px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
-.ctrl-btn:active{background:rgba(78,205,196,.3);}
+/* 3D Controls */
+#ctrl-panel{position:absolute;right:12px;bottom:160px;display:flex;flex-direction:column;gap:8px;pointer-events:all;}
+.ctrl-btn{width:46px;height:46px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.22);border-radius:14px;font-size:20px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;font-family:'Fredoka One',sans-serif;}
+.ctrl-btn:active{background:rgba(78,205,196,.35);transform:scale(.92);}
+.ctrl-divider{height:1px;background:rgba(255,255,255,.12);margin:2px 0;}
 
-/* Progress bar */
-.prog-bar{position:absolute;top:86px;left:14px;right:14px;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
-.prog-fill{height:100%;background:linear-gradient(90deg,#FF6B6B,#FFE66D,#4ECDC4);border-radius:2px;width:0%;transition:width .7s ease;}
+/* Progress */
+.prog-wrap{position:absolute;top:88px;left:14px;right:14px;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#FF6B6B,#FFE66D,#4ECDC4);border-radius:2px;width:0%;transition:width .7s;}
 
 /* Letter strip */
 .strip{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.92) 75%,transparent);padding:6px 0 24px;pointer-events:all;}
-.strip-label{font-size:9px;font-weight:800;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:2px;padding:0 14px 4px;}
+.strip-lbl{font-size:9px;font-weight:800;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:2px;padding:0 12px 4px;}
 .strip-track{display:flex;gap:7px;padding:2px 12px;overflow-x:auto;scrollbar-width:none;}
 .strip-track::-webkit-scrollbar{display:none;}
-.lb{flex-shrink:0;width:48px;height:48px;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);font-family:'Fredoka One',sans-serif;font-size:19px;color:rgba(255,255,255,.6);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1;transition:all .2s;}
+.lb{flex-shrink:0;width:50px;height:50px;border-radius:13px;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);font-family:'Fredoka One',sans-serif;font-size:19px;color:rgba(255,255,255,.6);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;transition:all .2s;}
 .lb .em{font-size:10px;margin-top:1px;}
 .lb.found{border-color:#4ECDC4;background:rgba(78,205,196,.18);color:#4ECDC4;}
 .lb.active{border-color:#FFE66D;background:rgba(255,230,109,.22);color:#FFE66D;transform:scale(1.14);box-shadow:0 0 16px rgba(255,230,109,.4);}
 
 /* Hint */
-#hint-text{position:absolute;bottom:152px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.65);backdrop-filter:blur(8px);border:1px solid rgba(78,205,196,.3);border-radius:22px;padding:8px 18px;font-size:12px;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap;pointer-events:none;animation:hp 2.2s ease-in-out infinite;transition:opacity .4s;}
+#hint{position:absolute;bottom:154px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.65);backdrop-filter:blur(8px);border:1px solid rgba(78,205,196,.3);border-radius:22px;padding:8px 18px;font-size:12px;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap;pointer-events:none;animation:hp 2.2s ease-in-out infinite;transition:opacity .4s;}
 @keyframes hp{0%,100%{opacity:.55}50%{opacity:1}}
 
-/* Detected flash */
-#detect-flash{position:fixed;inset:0;background:rgba(78,205,196,.18);pointer-events:none;opacity:0;transition:opacity .3s;z-index:400;}
-
-/* Print */
+/* print */
 @media print{
   body>*:not(#marker-modal){display:none!important;}
   #marker-modal{display:flex!important;background:white!important;padding:10px!important;}
   .m-title,.m-sub,.btn-print,.btn-back-m{display:none!important;}
-  .marker-grid{grid-template-columns:repeat(4,1fr)!important;gap:8px!important;}
-  .mk-card{border:6px solid #000!important;border-radius:4px!important;page-break-inside:avoid;}
+  .marker-grid{grid-template-columns:repeat(4,1fr)!important;}
+  .mk-card{border:6px solid #000!important;page-break-inside:avoid;}
   .mk-big{font-size:56px!important;width:72px!important;height:72px!important;}
 }
 </style>
 </head>
 <body>
 
-<!-- ══════════ SPLASH ══════════ -->
+<!-- ══ SPLASH ══ -->
 <div id="splash" class="screen">
-  <div class="logo-wrap">
-    <div class="logo-ring"><div class="logo-inner">🔤</div></div>
-  </div>
+  <div class="logo-ring"><div class="logo-inner">🔤</div></div>
   <div class="s-title">AR Alphabet 3D</div>
-  <p class="s-sub">Scan printed letter cards with your camera — 3D animals pop up with sound!</p>
+  <p class="s-sub">Print letter cards, scan them with your camera — real 3D models appear with sound!</p>
   <div class="steps-box">
-    <div class="step"><div class="sn">1</div><div>Tap <b style="color:#FFE66D">Print Markers</b> and print the alphabet cards</div></div>
-    <div class="step"><div class="sn">2</div><div>Tap <b style="color:#4ECDC4">Launch AR</b> — allow camera access</div></div>
-    <div class="step"><div class="sn">3</div><div>Point camera at any letter card — a <b style="color:#FF6B6B">3D animal appears</b> with a sound! Use pinch/buttons to zoom &amp; rotate</div></div>
+    <div class="step"><div class="sn">1</div><div>Tap <b style="color:#FFE66D">Print Markers</b> — print and cut the letter cards</div></div>
+    <div class="step"><div class="sn">2</div><div>Tap <b style="color:#4ECDC4">Launch AR</b> — allow camera access (needs HTTPS)</div></div>
+    <div class="step"><div class="sn">3</div><div>Point camera at a letter card → real 3D model pops up with <b style="color:#FF6B6B">sound!</b> Pinch or use buttons to zoom &amp; rotate</div></div>
   </div>
   <button class="btn btn-teal" onclick="showMarkers()">🖨️ Print Markers</button>
   <button class="btn btn-red" onclick="startCamScreen()">📷 Launch AR Camera</button>
 </div>
 
-<!-- ══════════ MARKER MODAL ══════════ -->
+<!-- ══ MARKER MODAL ══ -->
 <div id="marker-modal">
-  <div class="m-title">🖨️ Alphabet Marker Cards</div>
-  <p class="m-sub">Print and cut out these cards. Point your camera at each letter to see the 3D animal pop up!</p>
+  <div class="m-title">🖨️ Print Letter Cards</div>
+  <p class="m-sub">Print these cards. The thick black border acts as the AR tracking marker. Point your camera at any card to see the 3D model!</p>
   <div class="marker-grid" id="mGrid"></div>
   <button class="btn-print" onclick="window.print()">🖨️ Print All 26 Cards</button>
   <button class="btn-back-m" onclick="document.getElementById('marker-modal').classList.remove('on')">← Back</button>
 </div>
 
-<!-- ══════════ CAM PERMISSION ══════════ -->
+<!-- ══ CAM SCREEN ══ -->
 <div id="cam-screen" class="screen off">
   <div class="cam-icon">📷</div>
   <div class="cam-title">Enable Camera</div>
-  <p class="cam-sub">Your camera is needed to detect letter cards and overlay 3D animals in real time.</p>
+  <p class="cam-sub">Your camera detects printed letter cards and overlays real 3D models in augmented reality.</p>
   <div id="cam-err"></div>
-  <button class="btn btn-red" id="cam-btn" onclick="requestCamera()">✅ Allow Camera &amp; Start</button>
+  <button class="btn btn-red" id="cam-btn" onclick="requestCamera()">✅ Allow Camera &amp; Start AR</button>
   <button class="btn btn-ghost" onclick="only('splash')" style="margin-top:6px;">← Back</button>
 </div>
 
-<!-- ══════════ AR CONTAINER ══════════ -->
-<div id="ar-container">
-  <!-- MindAR / Three.js canvas goes here -->
+<!-- ══ AR VIEW ══ -->
+<div id="ar-view" class="screen off">
+  <video id="cam-video" autoplay playsinline muted></video>
+  <canvas id="three-canvas"></canvas>
 </div>
 
-<!-- ══════════ HUD ══════════ -->
+<!-- ══ HUD ══ -->
 <div id="hud" style="display:none;">
+
   <div class="hud-top">
     <button class="exit-btn" onclick="stopAR()">✕ Exit</button>
     <div class="hud-title">AR Alphabet 3D</div>
     <div class="hud-right">
-      <div class="score-badge">⭐ <span id="scoreNum">0</span></div>
+      <div class="score-pill">⭐ <span id="scoreNum">0</span></div>
     </div>
   </div>
 
-  <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+  <div class="prog-wrap"><div class="prog-fill" id="progFill"></div></div>
 
-  <!-- Info card -->
   <div id="info-card">
-    <div class="ic-emoji" id="icEmoji">🍎</div>
+    <div class="ic-em" id="icEm">🍎</div>
     <div class="ic-body">
-      <div class="ic-letter" id="icLetterLbl">LETTER A</div>
+      <div class="ic-tag" id="icTag">LETTER A</div>
       <div class="ic-word" id="icWord">Apple</div>
-      <div class="ic-ph" id="icPh">🔊 / æ / like "cat"</div>
-      <div class="ic-fact" id="icFact">Over 7,500 apple varieties exist!</div>
+      <div class="ic-ph" id="icPh">🔊 A for Apple</div>
+      <div class="ic-fact" id="icFact">Apples grow in over 7,500 varieties!</div>
     </div>
-    <button class="ic-sound-btn" id="soundBtn" onclick="speakCurrent()">🔊</button>
+    <button class="ic-sound" onclick="speakCurrent()">🔊</button>
   </div>
 
-  <!-- Scan frame -->
   <div class="scan-ring" id="scanRing">
-    <div class="corner tl"></div><div class="corner tr"></div>
-    <div class="corner bl"></div><div class="corner br"></div>
-    <div class="scan-line"></div>
-    <div class="scan-label">POINT AT A LETTER CARD</div>
+    <div class="cr tl"></div><div class="cr tr"></div>
+    <div class="cr bl"></div><div class="cr br"></div>
+    <div class="scan-ln"></div>
+    <div class="scan-lbl" id="scanLbl">POINT AT A LETTER CARD</div>
   </div>
 
-  <!-- 3D Controls -->
-  <div id="controls">
-    <button class="ctrl-btn" id="zoomInBtn" title="Zoom In">＋</button>
-    <button class="ctrl-btn" id="zoomOutBtn" title="Zoom Out">－</button>
-    <button class="ctrl-btn" id="rotLeftBtn" title="Rotate Left">↺</button>
-    <button class="ctrl-btn" id="rotRightBtn" title="Rotate Right">↻</button>
-    <button class="ctrl-btn" id="resetBtn" title="Reset">⟳</button>
+  <div id="det-badge">✨ Letter Detected!</div>
+
+  <!-- Controls: zoom + rotate -->
+  <div id="ctrl-panel">
+    <button class="ctrl-btn" id="zIn">＋</button>
+    <button class="ctrl-btn" id="zOut">－</button>
+    <div class="ctrl-divider"></div>
+    <button class="ctrl-btn" id="rL">↺</button>
+    <button class="ctrl-btn" id="rR">↻</button>
+    <div class="ctrl-divider"></div>
+    <button class="ctrl-btn" id="rst" title="Reset">⟳</button>
   </div>
 
-  <!-- Hint -->
-  <div id="hint-text">📋 Scan a printed letter card</div>
+  <div id="hint">📋 Hold a printed letter card in the frame</div>
 
-  <!-- Letter strip -->
   <div class="strip">
-    <div class="strip-label">Tap letter to preview</div>
+    <div class="strip-lbl">Tap any letter to preview its 3D model</div>
     <div class="strip-track" id="stripTrack"></div>
   </div>
+
 </div>
 
-<div id="detect-flash"></div>
-
 <script>
-/* ═══════════════════════════════════════════════
-   ALPHABET DATA — 26 letters
-   Each has: emoji, word, phonetic, fun fact, 3D color scheme
-═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   REAL APPLE GEOMETRY — extracted from uploaded FBX file
+   (Cinema 4D R16, 28 unique verts, 52 triangles)
+   Y-axis is up. Normalized to ±0.5 range.
+═══════════════════════════════════════════════════════ */
+const APPLE_VERTS = new Float32Array([
+  -0.04644,-0.5,-0.09935,-0.04644,-0.24449,-0.15024,
+   0.04645,-0.5,-0.09935, 0.04645,-0.24449,-0.15024,
+   0.04645,-0.5,-0.21418, 0.04645,-0.24449,-0.26507,
+  -0.04644,-0.5,-0.21418,-0.04644,-0.24449,-0.26507,
+  -0.04644, 0.07654,-0.15024, 0.04645, 0.07654,-0.15024,
+   0.04645, 0.07654,-0.26507,-0.04644, 0.07654,-0.26507,
+  -0.04644, 0.21975,-0.04989, 0.04644, 0.21975,-0.04989,
+   0.04644, 0.23422,-0.19300,-0.04644, 0.23422,-0.19300,
+  -0.04644, 0.35820, 0.07624, 0.04644, 0.35820, 0.07624,
+   0.04644, 0.37267,-0.06687,-0.04644, 0.37267,-0.06687,
+  -0.04610, 0.42774, 0.17106, 0.04610, 0.42774, 0.17106,
+   0.04610, 0.42774, 0.05440,-0.04610, 0.42774, 0.05440,
+  -0.08067, 0.47487, 0.26507, 0.08067, 0.47487, 0.26507,
+   0.08067, 0.50000, 0.01065,-0.08067, 0.50000, 0.01065
+]);
+
+const APPLE_IDX = new Uint16Array([
+  2,3,1, 2,1,0, 4,5,3, 4,3,2, 6,7,5, 6,5,4, 0,1,7, 0,7,6,
+  21,22,23, 21,23,20, 4,2,0, 4,0,6, 3,9,8, 3,8,1, 5,10,9, 5,9,3,
+  7,11,10, 7,10,5, 1,8,11, 1,11,7, 9,13,12, 9,12,8, 10,14,13, 10,13,9,
+  11,15,14, 11,14,10, 8,12,15, 8,15,11, 13,17,16, 13,16,12, 14,18,17, 14,17,13,
+  15,19,18, 15,18,14, 12,16,19, 12,19,15, 25,21,20, 25,20,24, 26,22,21, 26,21,25,
+  27,23,22, 27,22,26, 24,20,23, 24,23,27, 17,25,24, 17,24,16, 18,26,25, 18,25,17,
+  19,27,26, 19,26,18, 16,24,27, 16,27,19
+]);
+
+/* ═══════════════════════════════════════════════════════
+   ALPHABET DATA
+═══════════════════════════════════════════════════════ */
 const ALPHA = {
-  A:{emoji:'🍎',word:'Apple',   ph:'"A" is for Apple — /æ/ like in cat',  fact:'Apples come in 7,500+ varieties worldwide!',    colors:[0xe74c3c,0x27ae60,0x5d4037]},
-  B:{emoji:'🦋',word:'Butterfly',ph:'"B" is for Butterfly — /b/ like in ball', fact:'Butterflies taste with their feet!',        colors:[0xff6b9d,0xf9ca24,0x6ab04c]},
-  C:{emoji:'🐱',word:'Cat',     ph:'"C" is for Cat — /k/ like in kite',   fact:'Cats have 32 muscles in each ear!',              colors:[0xe67e22,0xf39c12,0xd35400]},
-  D:{emoji:'🦆',word:'Duck',    ph:'"D" is for Duck — /d/ like in dog',   fact:'Ducks can sleep with one eye open!',             colors:[0xf1c40f,0xe67e22,0x27ae60]},
-  E:{emoji:'🐘',word:'Elephant',ph:'"E" is for Elephant — /ɛ/ like in bed',fact:'Elephants never forget!',                      colors:[0x95a5a6,0x7f8c8d,0xbdc3c7]},
-  F:{emoji:'🐸',word:'Frog',    ph:'"F" is for Frog — /f/ like in fan',   fact:'Frogs absorb water through their skin!',         colors:[0x27ae60,0x2ecc71,0x1e8449]},
-  G:{emoji:'🦒',word:'Giraffe', ph:'"G" is for Giraffe — /g/ like in go', fact:'Giraffe tongues are 45 cm and purple!',          colors:[0xf39c12,0xe67e22,0xd35400]},
-  H:{emoji:'🐝',word:'Honeybee',ph:'"H" is for Honeybee — /h/ like in hat',fact:'Honeybees visit 5,000 flowers a day!',         colors:[0xf1c40f,0x2c3e50,0xe67e22]},
-  I:{emoji:'🦎',word:'Iguana',  ph:'"I" is for Iguana — /ɪ/ like in sit', fact:'Iguanas have a third eye on their head!',        colors:[0x27ae60,0x2ecc71,0x8e44ad]},
-  J:{emoji:'🐆',word:'Jaguar',  ph:'"J" is for Jaguar — /dʒ/ like in jet',fact:'Jaguars are the Americas\' largest cats!',      colors:[0xf39c12,0x2c3e50,0xe67e22]},
-  K:{emoji:'🦘',word:'Kangaroo',ph:'"K" is for Kangaroo — /k/ like in kit',fact:'Baby joeys are grape-sized at birth!',         colors:[0xe67e22,0xd35400,0xf39c12]},
-  L:{emoji:'🦁',word:'Lion',    ph:'"L" is for Lion — /l/ like in lamp',  fact:'A lion\'s roar travels 8 kilometres!',           colors:[0xf39c12,0xe67e22,0xd4ac0d]},
-  M:{emoji:'🐒',word:'Monkey',  ph:'"M" is for Monkey — /m/ like in map', fact:'Monkeys can count to nine!',                     colors:[0x795548,0x5d4037,0xd7ccc8]},
-  N:{emoji:'🦎',word:'Newt',    ph:'"N" is for Newt — /n/ like in net',   fact:'Newts can regrow lost limbs!',                   colors:[0xe74c3c,0x27ae60,0xf39c12]},
-  O:{emoji:'🦉',word:'Owl',     ph:'"O" is for Owl — /ɒ/ like in off',   fact:'Owls can rotate heads 270 degrees!',             colors:[0x795548,0xd4ac0d,0x2c3e50]},
-  P:{emoji:'🐧',word:'Penguin', ph:'"P" is for Penguin — /p/ like in pan',fact:'Penguins swim up to 25 km per hour!',           colors:[0x2c3e50,0xecf0f1,0xe74c3c]},
-  Q:{emoji:'🦜',word:'Quetzal', ph:'"Q" is for Quetzal — /kw/ like in quiz',fact:'Quetzal tail feathers can be 1 metre long!',  colors:[0x27ae60,0xe74c3c,0xf1c40f]},
-  R:{emoji:'🐇',word:'Rabbit',  ph:'"R" is for Rabbit — /r/ like in run', fact:'Rabbits have nearly 360-degree vision!',         colors:[0xecf0f1,0xbdc3c7,0xe84393]},
-  S:{emoji:'🐍',word:'Snake',   ph:'"S" is for Snake — /s/ like in sun',  fact:'Snakes smell the air with their tongues!',       colors:[0x27ae60,0x2c3e50,0xf1c40f]},
-  T:{emoji:'🐢',word:'Turtle',  ph:'"T" is for Turtle — /t/ like in tap', fact:'Sea turtles live over 100 years!',               colors:[0x27ae60,0x2c3e50,0xd4ac0d]},
-  U:{emoji:'🦄',word:'Unicorn', ph:'"U" is for Unicorn — /ʌ/ like in cup',fact:'Unicorns are Scotland\'s national animal!',     colors:[0x9b59b6,0x3498db,0xf1c40f]},
-  V:{emoji:'🦅',word:'Vulture', ph:'"V" is for Vulture — /v/ like in van',fact:'Vultures can soar 6 hours without flapping!',   colors:[0x795548,0x2c3e50,0xe74c3c]},
-  W:{emoji:'🐺',word:'Wolf',    ph:'"W" is for Wolf — /w/ like in win',   fact:'Wolf howls travel over 10 kilometres!',          colors:[0x95a5a6,0x2c3e50,0xecf0f1]},
-  X:{emoji:'🦊',word:'X-Fox',   ph:'"X" sounds like /z/ at the start',    fact:'Foxes use Earth\'s magnetic field to hunt!',     colors:[0xe74c3c,0xe67e22,0x2c3e50]},
-  Y:{emoji:'🦬',word:'Yak',     ph:'"Y" is for Yak — /j/ like in yes',   fact:'Yaks thrive at -40°C temperatures!',             colors:[0x4a4a4a,0x795548,0xd7ccc8]},
-  Z:{emoji:'🦓',word:'Zebra',   ph:'"Z" is for Zebra — /z/ like in zip',  fact:'Every zebra has unique stripe patterns!',        colors:[0x2c3e50,0xecf0f1,0x333333]},
+  A:{emoji:'🍎',word:'Apple',   ph:'A for Apple',  fact:'Over 7,500 apple varieties exist worldwide!', type:'apple'},
+  B:{emoji:'🦋',word:'Butterfly',ph:'B for Butterfly',fact:'Butterflies taste with their feet!',       type:'butterfly'},
+  C:{emoji:'🐱',word:'Cat',     ph:'C for Cat',    fact:'Cats have 32 muscles in each ear!',            type:'cat'},
+  D:{emoji:'🦆',word:'Duck',    ph:'D for Duck',   fact:'Ducks can sleep with one eye open!',           type:'duck'},
+  E:{emoji:'🐘',word:'Elephant',ph:'E for Elephant',fact:'Elephants never forget!',                    type:'elephant'},
+  F:{emoji:'🐸',word:'Frog',    ph:'F for Frog',   fact:'Frogs absorb water through their skin!',      type:'frog'},
+  G:{emoji:'🦒',word:'Giraffe', ph:'G for Giraffe',fact:'Giraffe tongues are 45 cm and purple!',       type:'giraffe'},
+  H:{emoji:'🐝',word:'Honeybee',ph:'H for Honeybee',fact:'Honeybees visit 5,000 flowers per day!',    type:'bee'},
+  I:{emoji:'🦎',word:'Iguana',  ph:'I for Iguana', fact:'Iguanas have a third eye on top of their head!',type:'generic'},
+  J:{emoji:'🐆',word:'Jaguar',  ph:'J for Jaguar', fact:'Jaguars are the strongest of the big cats!', type:'generic'},
+  K:{emoji:'🦘',word:'Kangaroo',ph:'K for Kangaroo',fact:'Baby joeys are smaller than a grape at birth!',type:'generic'},
+  L:{emoji:'🦁',word:'Lion',    ph:'L for Lion',   fact:'A lion\'s roar travels 8 kilometres!',        type:'generic'},
+  M:{emoji:'🐒',word:'Monkey',  ph:'M for Monkey', fact:'Monkeys can count up to nine!',               type:'generic'},
+  N:{emoji:'🦎',word:'Newt',    ph:'N for Newt',   fact:'Newts can fully regrow lost limbs!',          type:'generic'},
+  O:{emoji:'🦉',word:'Owl',     ph:'O for Owl',    fact:'Owls can rotate their heads 270 degrees!',    type:'generic'},
+  P:{emoji:'🐧',word:'Penguin', ph:'P for Penguin',fact:'Penguins swim up to 25 kilometres per hour!', type:'generic'},
+  Q:{emoji:'🦜',word:'Quetzal', ph:'Q for Quetzal',fact:'Quetzal tail feathers can be one metre long!',type:'generic'},
+  R:{emoji:'🐇',word:'Rabbit',  ph:'R for Rabbit', fact:'Rabbits have nearly 360 degree vision!',      type:'generic'},
+  S:{emoji:'🐍',word:'Snake',   ph:'S for Snake',  fact:'Snakes smell the air with their tongues!',    type:'generic'},
+  T:{emoji:'🐢',word:'Turtle',  ph:'T for Turtle', fact:'Sea turtles can live over 100 years!',        type:'generic'},
+  U:{emoji:'🦄',word:'Unicorn', ph:'U for Unicorn',fact:'Unicorns are Scotland\'s national animal!',   type:'generic'},
+  V:{emoji:'🦅',word:'Vulture', ph:'V for Vulture',fact:'Vultures soar for 6 hours without flapping!', type:'generic'},
+  W:{emoji:'🐺',word:'Wolf',    ph:'W for Wolf',   fact:'Wolf howls travel over 10 kilometres!',       type:'generic'},
+  X:{emoji:'🦊',word:'X-Fox',   ph:'X sounds like Z at the start of words',fact:'Foxes use Earth\'s magnetic field to hunt!', type:'generic'},
+  Y:{emoji:'🦬',word:'Yak',     ph:'Y for Yak',    fact:'Yaks can survive minus 40 degree temperatures!',type:'generic'},
+  Z:{emoji:'🦓',word:'Zebra',   ph:'Z for Zebra',  fact:'Every zebra has its own unique stripe pattern!',type:'generic'},
 };
 const LETTERS = Object.keys(ALPHA);
 
-/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════
    STATE
-═══════════════════════════════════════════════ */
-let camStream = null;
-let mindarThree = null;
-let renderer = null, scene = null, camera = null;
-let anchors = {};        // letter -> MindAR anchor
-let models3D = {};       // letter -> THREE.Group
-let currentLetter = null;
-let currentGroup = null;
-let found = new Set();
-let score = 0;
-let hideTimer = null;
-let animId = null;
+═══════════════════════════════════════════════════════ */
+let camStream=null, found=new Set(), score=0, hideTimer=null;
+let renderer=null, scene=null, cam3=null;
+let models={}, curModel=null, curLetter=null;
+let animId=null, detCtx=null, detCv=null, lastDetMs=0, autoIdx=0;
+let mScale=1.0, mRotY=0, rotY=0, autoRot=true;
 
-// Manual transform state
-let manualScale = 1.0;
-let manualRotY = 0;
-let autoRotating = true;
-
-/* ═══════════════════════════════════════════════
-   SCREEN HELPERS
-═══════════════════════════════════════════════ */
-function only(id) {
-  ['splash','cam-screen'].forEach(s =>
-    document.getElementById(s).classList.toggle('off', s !== id)
-  );
+/* ═══════════════════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════════════════ */
+function only(id){
+  ['splash','cam-screen','ar-view'].forEach(s=>
+    document.getElementById(s).classList.toggle('off',s!==id));
 }
 
-/* ═══════════════════════════════════════════════
-   MARKER MODAL
-═══════════════════════════════════════════════ */
-function showMarkers() {
-  const g = document.getElementById('mGrid');
-  if (!g.children.length) {
-    LETTERS.forEach(l => {
-      const d = ALPHA[l];
-      const c = document.createElement('div');
-      c.className = 'mk-card';
-      c.innerHTML = `
-        <div class="mk-ar-border"></div>
-        <div class="mk-big">${l}</div>
-        <div class="mk-em">${d.emoji}</div>
-        <div class="mk-w">${d.word}</div>`;
-      g.appendChild(c);
-    });
-  }
+/* ═══════════════════════════════════════════════════════
+   MARKER GRID
+═══════════════════════════════════════════════════════ */
+function showMarkers(){
+  const g=document.getElementById('mGrid');
+  if(!g.children.length) LETTERS.forEach(l=>{
+    const d=ALPHA[l],c=document.createElement('div');
+    c.className='mk-card';
+    c.innerHTML=`<div class="mk-big">${l}</div><div class="mk-em">${d.emoji}</div><div class="mk-w">${d.word}</div>`;
+    g.appendChild(c);
+  });
   document.getElementById('marker-modal').classList.add('on');
 }
 
-/* ═══════════════════════════════════════════════
-   CAMERA FLOW
-═══════════════════════════════════════════════ */
-function startCamScreen() { only('cam-screen'); }
+/* ═══════════════════════════════════════════════════════
+   CAMERA
+═══════════════════════════════════════════════════════ */
+function startCamScreen(){ only('cam-screen'); }
 
-async function requestCamera() {
-  const btn = document.getElementById('cam-btn');
-  const errEl = document.getElementById('cam-err');
-  btn.textContent = '⏳ Starting camera…';
-  btn.disabled = true;
-  errEl.style.display = 'none';
+async function requestCamera(){
+  const btn=document.getElementById('cam-btn');
+  const err=document.getElementById('cam-err');
+  btn.textContent='⏳ Opening camera…'; btn.disabled=true;
+  err.style.display='none';
 
-  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-    showCamErr('❌ Camera needs HTTPS.\n\nHost this file on:\n• netlify.com/drop (drag & drop, free)\n• GitHub Pages\n• Vercel\n\nThen open the HTTPS link on your phone.');
-    btn.textContent = '✅ Allow Camera & Start';
-    btn.disabled = false;
-    return;
+  if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1'){
+    showErr('❌ Camera requires HTTPS.\n\nHost this file on:\n• netlify.com/drop  (drag & drop, free)\n• GitHub Pages\n• Vercel\n\nThen open the HTTPS link on your phone.');
+    btn.textContent='✅ Allow Camera & Start AR'; btn.disabled=false; return;
   }
-
-  try {
-    // Get camera stream first to check permissions
-    try {
-      camStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false
-      });
-    } catch(_) {
-      camStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-        audio: false
-      });
+  try{
+    try{
+      camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+    }catch(_){
+      camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
     }
-    camStream.getTracks().forEach(t => t.stop()); // release — MindAR will reopen
-    camStream = null;
-
-    // Launch AR
-    document.getElementById('cam-screen').classList.add('off');
-    await launchMindAR();
-
-  } catch(e) {
-    console.error(e);
-    btn.textContent = '✅ Allow Camera & Start';
-    btn.disabled = false;
-    if (e.name === 'NotAllowedError')
-      showCamErr('❌ Camera permission denied.\n\nGo to browser Settings → Site Permissions → Camera → Allow this site.');
-    else if (e.name === 'NotFoundError')
-      showCamErr('❌ No camera found on this device.');
-    else if (e.name === 'NotReadableError')
-      showCamErr('❌ Camera busy. Close other camera apps and try again.');
-    else
-      showCamErr('❌ ' + (e.message || e.name) + '\n\nMake sure you are on HTTPS.');
+    const vid=document.getElementById('cam-video');
+    vid.srcObject=camStream;
+    await new Promise((r,rj)=>{vid.onloadedmetadata=r;setTimeout(()=>rj(new Error('timeout')),8000);});
+    await vid.play();
+    only('ar-view');
+    document.getElementById('hud').style.display='block';
+    buildStrip();
+    initThree();
+    setupControls();
+    setupPinch();
+    startLoop();
+  }catch(e){
+    btn.textContent='✅ Allow Camera & Start AR'; btn.disabled=false;
+    if(e.name==='NotAllowedError') showErr('❌ Camera denied.\n\nGo to browser Settings → Site Permissions → Camera → Allow this site.');
+    else if(e.name==='NotFoundError') showErr('❌ No camera found on this device.');
+    else if(e.name==='NotReadableError') showErr('❌ Camera is busy. Close other camera apps and try again.');
+    else showErr('❌ '+(e.message||e.name)+'\n\nEnsure you are on HTTPS.');
   }
 }
+function showErr(m){const e=document.getElementById('cam-err');e.style.display='block';e.textContent=m;}
 
-function showCamErr(msg) {
-  const el = document.getElementById('cam-err');
-  el.style.display = 'block';
-  el.textContent = msg;
-}
+/* ═══════════════════════════════════════════════════════
+   THREE.JS INIT
+═══════════════════════════════════════════════════════ */
+function initThree(){
+  const W=window.innerWidth, H=window.innerHeight;
+  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('three-canvas'),alpha:true,antialias:true});
+  renderer.setSize(W,H);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(0,0);
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
-/* ═══════════════════════════════════════════════
-   MINDAR + THREE.JS LAUNCH
-   Uses image targets (the printed letter cards as markers)
-═══════════════════════════════════════════════ */
-async function launchMindAR() {
-  const container = document.getElementById('ar-container');
-  container.classList.add('on');
-  document.getElementById('hud').style.display = 'block';
+  scene=new THREE.Scene();
+  cam3=new THREE.PerspectiveCamera(52,W/H,.01,200);
+  cam3.position.set(0,0.4,3.2);
+  cam3.lookAt(0,0,0);
 
-  // MindAR with image tracking
-  // We use a pre-compiled .mind target file hosted publicly OR
-  // fall back to manual video + Three.js overlay
-  try {
-    await launchWithMindAR(container);
-  } catch(e) {
-    console.warn('MindAR failed, using direct camera mode:', e);
-    await launchDirectMode(container);
-  }
-}
+  // Rich lighting for realistic look
+  scene.add(new THREE.AmbientLight(0xfff0e0,0.5));
+  const sun=new THREE.DirectionalLight(0xfff5e0,1.6); sun.position.set(4,8,4); sun.castShadow=true; scene.add(sun);
+  const fill=new THREE.DirectionalLight(0xadd8ff,0.4); fill.position.set(-4,2,-3); scene.add(fill);
+  const rim=new THREE.PointLight(0xffcc88,0.6,12); rim.position.set(-2,4,2); scene.add(rim);
+  const under=new THREE.PointLight(0x88ffcc,0.25,8); under.position.set(0,-3,0); scene.add(under);
 
-/* ── MindAR image tracking mode ── */
-async function launchWithMindAR(container) {
-  // MindAR needs a .mind target file
-  // We generate letter-based marker targets using canvas patterns
-  // and use NFT (natural feature tracking) for each letter card
-
-  // For reliable marker tracking we use aruco-style approach via canvas
-  // Since we can't generate .mind files at runtime, we use the fallback
-  // direct mode with simulated detection
-  throw new Error('Using direct mode');
-}
-
-/* ── Direct camera + Three.js overlay mode ── */
-async function launchDirectMode(container) {
-  // Create video
-  const video = document.createElement('video');
-  video.setAttribute('autoplay', '');
-  video.setAttribute('playsinline', '');
-  video.setAttribute('muted', '');
-  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
-  container.appendChild(video);
-
-  // Open camera
-  camStream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
-    audio: false
-  });
-  video.srcObject = camStream;
-  await new Promise(r => { video.onloadedmetadata = r; });
-  await video.play();
-
-  // Three.js
-  initThree(container, video);
-  buildStrip();
-  setupControls();
-  setupGestures(container);
-  startRenderLoop(video);
-}
-
-/* ═══════════════════════════════════════════════
-   THREE.JS SETUP
-═══════════════════════════════════════════════ */
-function initThree(container, video) {
-  const W = window.innerWidth, H = window.innerHeight;
-
-  renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-  renderer.setSize(W, H);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.setClearColor(0x000000, 0);
-  renderer.shadowMap.enabled = true;
-  container.appendChild(renderer.domElement);
-  renderer.domElement.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
-
-  scene = new THREE.Scene();
-
-  camera = new THREE.PerspectiveCamera(60, W / H, 0.01, 200);
-  camera.position.set(0, 1.2, 4.5);
-  camera.lookAt(0, 0.5, 0);
-
-  // Lights
-  const amb = new THREE.AmbientLight(0xffffff, 0.6);
-  scene.add(amb);
-
-  const sun = new THREE.DirectionalLight(0xfff5e0, 1.4);
-  sun.position.set(4, 8, 4);
-  sun.castShadow = true;
-  scene.add(sun);
-
-  const fill = new THREE.DirectionalLight(0xadd8ff, 0.5);
-  fill.position.set(-3, 2, -3);
-  scene.add(fill);
-
-  const rim = new THREE.PointLight(0xff6b6b, 0.4, 10);
-  rim.position.set(2, 3, -2);
-  scene.add(rim);
-
-  // Build all 26 models
-  LETTERS.forEach(l => {
-    const g = buildAnimal(l);
-    g.visible = false;
-    g.scale.setScalar(0);
-    scene.add(g);
-    models3D[l] = g;
+  LETTERS.forEach(l=>{
+    const g=buildModel(l);
+    g.visible=false; g.scale.setScalar(0);
+    scene.add(g); models[l]=g;
   });
 
-  window.addEventListener('resize', () => {
-    if (!renderer) return;
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+  window.addEventListener('resize',()=>{
+    if(!renderer)return;
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    cam3.aspect=window.innerWidth/window.innerHeight;
+    cam3.updateProjectionMatrix();
   });
 }
 
-/* ═══════════════════════════════════════════════
-   3D ANIMAL FACTORY
-   Each letter gets a hand-crafted animal made from
-   primitive geometries with proper colors & proportions
-═══════════════════════════════════════════════ */
-function M(col, rough=0.55, metal=0.05) {
-  return new THREE.MeshStandardMaterial({ color: col, roughness: rough, metalness: metal });
+/* ═══════════════════════════════════════════════════════
+   MODEL BUILDER
+═══════════════════════════════════════════════════════ */
+function mat(c,r=.45,m=.08,e=null){
+  const o={color:c,roughness:r,metalness:m};
+  if(e!=null)o.emissive=new THREE.Color(e),o.emissiveIntensity=.12;
+  return new THREE.MeshStandardMaterial(o);
 }
-function Sph(r,c,rg){return new THREE.Mesh(new THREE.SphereGeometry(r,24,18),M(c,rg));}
-function Box(w,h,d,c){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(c));}
-function Cyl(rt,rb,h,c,s=14){return new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,s),M(c));}
-function Con(r,h,c,s=12){return new THREE.Mesh(new THREE.ConeGeometry(r,h,s),M(c));}
-function Tor(r,t,c,s=18,ts=12){return new THREE.Mesh(new THREE.TorusGeometry(r,t,ts,s),M(c));}
+function Sph(r,c,ro,mt){ const m=new THREE.Mesh(new THREE.SphereGeometry(r,28,22),mat(c,ro,mt)); m.castShadow=true; return m; }
+function Box(w,h,d,c,ro){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c,ro)); m.castShadow=true; return m; }
+function Cyl(rt,rb,h,c,ro,s=14){ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,s),mat(c,ro)); m.castShadow=true; return m; }
+function Con(r,h,c,ro,s=14){ const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,s),mat(c,ro)); m.castShadow=true; return m; }
 
-function addShadow(g){
-  const m=new THREE.Mesh(new THREE.CircleGeometry(.7,32),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.25,depthWrite:false}));
-  m.rotation.x=-Math.PI/2; m.position.y=0.01; g.add(m);
+function addGround(g){
+  const m=new THREE.Mesh(new THREE.CircleGeometry(.65,36),new THREE.MeshBasicMaterial({color:0x000,transparent:true,opacity:.22,depthWrite:false}));
+  m.rotation.x=-Math.PI/2; m.position.y=-.02; g.add(m);
 }
 
-function buildAnimal(letter) {
-  const g = new THREE.Group();
-  const d = ALPHA[letter];
-  const [c1,c2,c3] = d.colors;
+/* ── REAL APPLE from FBX ── */
+function buildApple(){
+  const g=new THREE.Group();
 
-  switch(letter) {
+  // Main body — FBX mesh
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(APPLE_VERTS,3));
+  geo.setIndex(new THREE.BufferAttribute(APPLE_IDX,1));
+  geo.computeVertexNormals();
 
-    case 'A': { // Apple — detailed with leaf veins, glossy
-      const body = Sph(.58,c1,.2); body.position.y=.6; body.scale.set(1,1.05,1); g.add(body);
-      // Highlight
-      const hl = new THREE.Mesh(new THREE.SphereGeometry(.14,12,10),new THREE.MeshStandardMaterial({color:0xffaaaa,roughness:.05,metalness:.2,transparent:true,opacity:.7}));
-      hl.position.set(.2,1.0,.42); g.add(hl);
-      // Dent top
-      const dent = Sph(.14,0xc0392b,.3); dent.position.y=1.12; g.add(dent);
-      // Stem
-      const stem = Cyl(.035,.025,.32,c3); stem.position.y=1.28; g.add(stem);
-      // Leaf
-      const leaf = Con(.2,.28,c2,8); leaf.position.set(.18,1.3,0); leaf.rotation.z=-.65; g.add(leaf);
-      const leafv = Cyl(.012,.012,.26,0x1e8449); leafv.position.set(.18,1.3,0); leafv.rotation.z=-.65; g.add(leafv);
-      break;
-    }
+  // Scale up so it fills the scene nicely
+  const apple=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({
+    color:0xdd2222, roughness:.28, metalness:.08,
+    emissive:new THREE.Color(0x550000), emissiveIntensity:.1
+  }));
+  apple.scale.setScalar(2.2);
+  apple.position.y=-0.05;
+  apple.castShadow=true;
+  g.add(apple);
 
-    case 'B': { // Butterfly — wings with pattern
-      const body = Sph(.18,0x4a2c0a,.5); body.scale.set(.6,2.2,.6); body.position.y=.7; g.add(body);
-      const head = Sph(.14,0x5d3a14); head.position.y=1.12; g.add(head);
-      // Eyes
-      const e1=Sph(.04,0x111); e1.position.set(.08,1.16,.1); g.add(e1);
-      const e2=Sph(.04,0x111); e2.position.set(-.08,1.16,.1); g.add(e2);
-      // Antennae
-      const an1=Cyl(.01,.01,.35,0x333); an1.rotation.z=.4; an1.position.set(.12,1.32,0); g.add(an1);
-      const an2=Cyl(.01,.01,.35,0x333); an2.rotation.z=-.4; an2.position.set(-.12,1.32,0); g.add(an2);
-      const ab1=Sph(.05,0x333); ab1.position.set(.24,1.48,0); g.add(ab1);
-      const ab2=Sph(.05,0x333); ab2.position.set(-.24,1.48,0); g.add(ab2);
-      // Wings — upper (large)
-      const wm1=new THREE.MeshStandardMaterial({color:c1,roughness:.3,metalness:.1,side:THREE.DoubleSide});
-      const ws1=new THREE.SphereGeometry(.52,14,10); const w1=new THREE.Mesh(ws1,wm1);
-      w1.scale.set(1,.25,1.4); w1.position.set(.55,.9,.0); w1.rotation.z=-.3; g.add(w1);
-      const w2=new THREE.Mesh(ws1,wm1); w2.scale.set(1,.25,1.4); w2.position.set(-.55,.9,0); w2.rotation.z=.3; g.add(w2);
-      // Wings — lower (smaller)
-      const wm2=new THREE.MeshStandardMaterial({color:c2,roughness:.3,metalness:.1,side:THREE.DoubleSide});
-      const ws2=new THREE.SphereGeometry(.38,12,8); const w3=new THREE.Mesh(ws2,wm2);
-      w3.scale.set(1,.2,1.1); w3.position.set(.42,.58,0); w3.rotation.z=.2; g.add(w3);
-      const w4=new THREE.Mesh(ws2,wm2); w4.scale.set(1,.2,1.1); w4.position.set(-.42,.58,0); w4.rotation.z=-.2; g.add(w4);
-      // Wing spots
-      const sp1=Sph(.08,c3); sp1.position.set(.52,.95,0); g.add(sp1);
-      const sp2=Sph(.08,c3); sp2.position.set(-.52,.95,0); g.add(sp2);
-      break;
-    }
+  // Glossy highlight spot
+  const hl=new THREE.Mesh(new THREE.SphereGeometry(.12,14,12),
+    new THREE.MeshStandardMaterial({color:0xff8888,roughness:.04,metalness:.3,transparent:true,opacity:.6}));
+  hl.position.set(.22,.62,.28); g.add(hl);
 
-    case 'C': { // Cat — fluffy with proper face
-      const body = Sph(.42,c1,.6); body.scale.set(1,.95,1.05); body.position.y=.45; g.add(body);
-      const head = Sph(.33,c1,.5); head.position.y=.98; g.add(head);
-      // Ears
-      const er1=Con(.14,.26,c1); er1.position.set(.2,1.28,0); er1.rotation.z=.32; g.add(er1);
-      const er2=Con(.14,.26,c1); er2.position.set(-.2,1.28,0); er2.rotation.z=-.32; g.add(er2);
-      const ie1=Con(.08,.16,0xe84393); ie1.position.set(.2,1.28,0); ie1.rotation.z=.32; g.add(ie1);
-      const ie2=Con(.08,.16,0xe84393); ie2.position.set(-.2,1.28,0); ie2.rotation.z=-.32; g.add(ie2);
-      // Eyes
-      const eye1=Sph(.07,0x2ecc71,.1); eye1.position.set(.12,1.01,.28); g.add(eye1);
-      const eye2=Sph(.07,0x2ecc71,.1); eye2.position.set(-.12,1.01,.28); g.add(eye2);
-      const p1=Sph(.04,0x111); p1.position.set(.12,1.01,.33); g.add(p1);
-      const p2=Sph(.04,0x111); p2.position.set(-.12,1.01,.33); g.add(p2);
-      const gl1=Sph(.02,0xffffff); gl1.position.set(.14,1.03,.35); g.add(gl1);
-      const gl2=Sph(.02,0xffffff); gl2.position.set(-.1,1.03,.35); g.add(gl2);
-      // Nose
-      const nose=Sph(.04,0xe84393); nose.position.set(0,.93,.32); g.add(nose);
-      // Mouth
-      const m1=Cyl(.01,.01,.1,0x5d2d0a); m1.rotation.z=-.5; m1.position.set(.06,.88,.31); g.add(m1);
-      const m2=Cyl(.01,.01,.1,0x5d2d0a); m2.rotation.z=.5; m2.position.set(-.06,.88,.31); g.add(m2);
-      // Tail
-      const tail=Tor(.28,.05,c2,10,6); tail.rotation.x=Math.PI/2; tail.position.set(.28,.3,-.35); tail.rotation.set(1.2,0,.8); g.add(tail);
-      // Paws
-      const p3=Sph(.1,c1,.5); p3.scale.set(1.2,.6,1); p3.position.set(.2,.05,.38); g.add(p3);
-      const p4=Sph(.1,c1,.5); p4.scale.set(1.2,.6,1); p4.position.set(-.2,.05,.38); g.add(p4);
-      break;
-    }
+  // Stem
+  const stem=Cyl(.035,.022,.32,0x4a2d07,.6); stem.position.y=1.05; g.add(stem);
 
-    case 'D': { // Duck
-      const body=Sph(.48,c1,.4); body.scale.set(1,.78,1.22); body.position.y=.4; g.add(body);
-      const tail=Con(.18,.22,c2); tail.rotation.x=-.7; tail.position.set(0,.55,-.52); g.add(tail);
-      const head=Sph(.24,c1,.3); head.position.set(.32,.82,.22); g.add(head);
-      // Bill
-      const bill=Cyl(.07,.1,.22,c3); bill.rotation.z=-Math.PI/2; bill.position.set(.54,.78,.22); g.add(bill);
-      const billT=Sph(.07,c3,.3); billT.scale.set(.5,.4,1); billT.position.set(.66,.78,.22); g.add(billT);
-      // Eye
-      const e1=Sph(.055,0x2c3e50); e1.position.set(.4,.86,.36); g.add(e1);
-      const eg=Sph(.025,0xffffff); eg.position.set(.42,.88,.39); g.add(eg);
-      // Wing
-      const wg=Sph(.32,c2,.4); wg.scale.set(.6,.28,1.3); wg.position.set(-.08,.54,.2); g.add(wg);
-      // Feet
-      const f1=Box(.28,.04,.32,0xe67e22); f1.position.set(.14,.02,.3); g.add(f1);
-      const f2=Box(.28,.04,.32,0xe67e22); f2.position.set(-.14,.02,.3); g.add(f2);
-      break;
-    }
+  // Leaf
+  const leafG=new THREE.BufferGeometry();
+  const lv=new Float32Array([0,0,0, .28,.12,0, .16,.24,0, -.04,.22,0]);
+  leafG.setAttribute('position',new THREE.BufferAttribute(lv,3));
+  leafG.setIndex(new THREE.BufferAttribute(new Uint16Array([0,1,2,0,2,3]),1));
+  leafG.computeVertexNormals();
+  const leaf=new THREE.Mesh(leafG,new THREE.MeshStandardMaterial({color:0x22aa44,roughness:.6,side:THREE.DoubleSide}));
+  leaf.position.set(.06,1.15,.0); leaf.rotation.z=-.3; leaf.castShadow=true; g.add(leaf);
 
-    case 'E': { // Elephant — large & detailed
-      const body=Sph(.56,c1,.55); body.scale.set(1,.88,1.15); body.position.y=.48; g.add(body);
-      const head=Sph(.38,c1,.5); head.position.set(0,1.06,.34); g.add(head);
-      // Trunk (multi-segment)
-      const tr1=Cyl(.1,.1,.32,c2); tr1.rotation.x=.5; tr1.position.set(0,.82,.62); g.add(tr1);
-      const tr2=Cyl(.09,.08,.3,c2); tr2.rotation.x=.8; tr2.position.set(0,.64,.82); g.add(tr2);
-      const trT=Sph(.09,c2); trT.position.set(0,.48,.95); g.add(trT);
-      // Ears
-      const eM=new THREE.MeshStandardMaterial({color:0xd7bba8,roughness:.6});
-      const ea1=new THREE.Mesh(new THREE.SphereGeometry(.36,14,10),eM); ea1.scale.set(.28,.7,.08); ea1.position.set(.52,.98,.18); g.add(ea1);
-      const ea2=new THREE.Mesh(new THREE.SphereGeometry(.36,14,10),eM); ea2.scale.set(.28,.7,.08); ea2.position.set(-.52,.98,.18); g.add(ea2);
-      // Eyes
-      const e1=Sph(.058,0x2c3e50); e1.position.set(.18,1.12,.62); g.add(e1);
-      const e2=Sph(.058,0x2c3e50); e2.position.set(-.18,1.12,.62); g.add(e2);
-      const eg1=Sph(.025,0xffffff); eg1.position.set(.2,1.14,.65); g.add(eg1);
-      const eg2=Sph(.025,0xffffff); eg2.position.set(-.16,1.14,.65); g.add(eg2);
-      // Tusks
-      const tk1=Cyl(.03,.02,.3,0xf5f5f5); tk1.rotation.set(.3,.2,0); tk1.position.set(.14,.9,.68); g.add(tk1);
-      const tk2=Cyl(.03,.02,.3,0xf5f5f5); tk2.rotation.set(.3,-.2,0); tk2.position.set(-.14,.9,.68); g.add(tk2);
-      // Legs
-      [[.26,.16,.26],[-.26,.16,.26],[.26,.16,-.22],[-.26,.16,-.22]].forEach(([x,y,z])=>{
-        const leg=Cyl(.11,.1,.38,c2); leg.position.set(x,y,z); g.add(leg);
-        const foot=Cyl(.12,.12,.1,c1); foot.position.set(x,.03,z); g.add(foot);
-      });
-      // Tail
-      const tl=Cyl(.03,.02,.22,c2); tl.rotation.x=-.4; tl.position.set(0,.55,-.56); g.add(tl);
-      break;
-    }
+  // Leaf vein
+  const veinG=new THREE.BufferGeometry();
+  const vv=new Float32Array([0,0,.01,.22,.1,.01]);
+  veinG.setAttribute('position',new THREE.BufferAttribute(vv,3));
+  const vein=new THREE.LineSegments(veinG,new THREE.LineBasicMaterial({color:0x117733}));
+  vein.position.set(.06,1.15,.0); vein.rotation.z=-.3; g.add(vein);
 
-    case 'F': { // Frog — bright with detailed eyes
-      const body=Sph(.44,c1,.4); body.scale.set(1,.68,1.12); body.position.y=.32; g.add(body);
-      const belly=Sph(.38,0xd5f5e3,.3); belly.scale.set(.82,.55,.7); belly.position.set(0,.32,.22); g.add(belly);
-      const head=Sph(.34,c2,.35); head.position.set(0,.68,.12); g.add(head);
-      // Bulging eyes on top
-      const ey1=Sph(.14,c1,.3); ey1.position.set(.2,.98,.08); g.add(ey1);
-      const ey2=Sph(.14,c1,.3); ey2.position.set(-.2,.98,.08); g.add(ey2);
-      const ep1=Sph(.08,0x2c3e50); ep1.position.set(.2,1.02,.18); g.add(ep1);
-      const ep2=Sph(.08,0x2c3e50); ep2.position.set(-.2,1.02,.18); g.add(ep2);
-      const gl1=Sph(.03,0xffffff); gl1.position.set(.22,1.04,.22); g.add(gl1);
-      const gl2=Sph(.03,0xffffff); gl2.position.set(-.18,1.04,.22); g.add(gl2);
-      // Mouth smile
-      const sm=Tor(.14,.025,c3,8,5); sm.rotation.set(Math.PI/2,0,0); sm.position.set(0,.62,.3); g.add(sm);
-      // Legs
-      const fl1=Cyl(.055,.055,.42,c1); fl1.rotation.z=.8; fl1.position.set(.48,.3,.26); g.add(fl1);
-      const fl2=Cyl(.055,.055,.42,c1); fl2.rotation.z=-.8; fl2.position.set(-.48,.3,.26); g.add(fl2);
-      const bl1=Cyl(.06,.06,.48,c2); bl1.rotation.x=.35; bl1.rotation.z=-.2; bl1.position.set(.42,.18,-.28); g.add(bl1);
-      const bl2=Cyl(.06,.06,.48,c2); bl2.rotation.x=.35; bl2.rotation.z=.2; bl2.position.set(-.42,.18,-.28); g.add(bl2);
-      // Webbed feet
-      const wf1=Con(.18,.08,c3); wf1.rotation.x=-Math.PI/2; wf1.position.set(.42,.05,.28); g.add(wf1);
-      const wf2=Con(.18,.08,c3); wf2.rotation.x=-Math.PI/2; wf2.position.set(-.42,.05,.28); g.add(wf2);
-      break;
-    }
+  // Dent at top
+  const dent=Sph(.13,0xaa1111,.4); dent.position.y=.98; g.add(dent);
 
-    case 'G': { // Giraffe — with patches
-      const body=Box(.52,.52,.76,c1); body.position.y=.44; g.add(body);
-      // Neck
-      const neck=Cyl(.12,.1,.82,c1); neck.rotation.x=.22; neck.position.set(.05,1.08,.18); g.add(neck);
-      const neckH=Box(.22,.22,.32,c1); neckH.position.set(.08,1.52,.38); g.add(neckH);
-      // Ossicones
-      const oc1=Cyl(.03,.025,.22,c3); oc1.position.set(.14,1.74,.3); g.add(oc1);
-      const oc2=Cyl(.03,.025,.22,c3); oc2.position.set(.02,1.74,.3); g.add(oc2);
-      const ob1=Sph(.05,c3); ob1.position.set(.14,1.85,.3); g.add(ob1);
-      const ob2=Sph(.05,c3); ob2.position.set(.02,1.85,.3); g.add(ob2);
-      // Eye
-      const eye=Sph(.055,0x2c3e50); eye.position.set(.18,1.54,.52); g.add(eye);
-      const egl=Sph(.025,0xffffff); egl.position.set(.2,1.56,.55); g.add(egl);
-      // Patches
-      [[0,.6,.35],[.22,.44,.36],[-.18,.28,.36],[.05,.7,-.3],[-.12,.5,.36]].forEach(([x,y,z])=>{
-        const p=Box(.18+Math.random()*.1,.18+Math.random()*.1,.06,c2);
-        p.position.set(x,y,z); p.rotation.y=(Math.random()-.5)*.5; g.add(p);
-      });
-      // Legs
-      [[.22,.16,.26],[-.22,.16,.26],[.22,.16,-.26],[-.22,.16,-.26]].forEach(([x,y,z])=>{
-        const leg=Cyl(.07,.07,.44,c1); leg.position.set(x,y,z); g.add(leg);
-        const hoof=Cyl(.075,.075,.1,c3); hoof.position.set(x,-.04,z); g.add(hoof);
-      });
-      // Tail
-      const tail=Cyl(.025,.018,.26,c3); tail.rotation.x=-.35; tail.position.set(0,.5,-.44); g.add(tail);
-      break;
-    }
-
-    case 'H': { // Honeybee — fat & cute
-      const body=Sph(.38,c1,.35); body.scale.set(1,1.2,1); body.position.y=.5; g.add(body);
-      // Stripes
-      [.56,.44,.32].forEach((y,i)=>{
-        const stripe=Cyl(.4,.4,.09,i%2===0?c2:c1,18); stripe.position.y=y; g.add(stripe);
-      });
-      const head=Sph(.24,c1,.3); head.position.y=.96; g.add(head);
-      // Eyes
-      const e1=Sph(.065,0x2c3e50); e1.position.set(.1,1.0,.2); g.add(e1);
-      const e2=Sph(.065,0x2c3e50); e2.position.set(-.1,1.0,.2); g.add(e2);
-      const gl1=Sph(.025,0xffffff); gl1.position.set(.12,1.02,.23); g.add(gl1);
-      const gl2=Sph(.025,0xffffff); gl2.position.set(-.08,1.02,.23); g.add(gl2);
-      // Smile
-      const sm=Cyl(.01,.01,.14,0x5d3a00); sm.rotation.z=Math.PI/2; sm.position.set(0,.9,.23); g.add(sm);
-      // Wings (transparent)
-      const wM=new THREE.MeshStandardMaterial({color:0xddeeff,transparent:true,opacity:.55,roughness:.05,metalness:.1,side:THREE.DoubleSide});
-      const w1=new THREE.Mesh(new THREE.SphereGeometry(.32,12,8),wM); w1.scale.set(1.4,.12,.85); w1.position.set(.5,.8,.0); w1.rotation.z=.38; g.add(w1);
-      const w2=new THREE.Mesh(new THREE.SphereGeometry(.32,12,8),wM); w2.scale.set(1.4,.12,.85); w2.position.set(-.5,.8,0); w2.rotation.z=-.38; g.add(w2);
-      const w3=new THREE.Mesh(new THREE.SphereGeometry(.22,12,8),wM); w3.scale.set(1.1,.1,.7); w3.position.set(.44,.62,0); w3.rotation.z=.2; g.add(w3);
-      const w4=new THREE.Mesh(new THREE.SphereGeometry(.22,12,8),wM); w4.scale.set(1.1,.1,.7); w4.position.set(-.44,.62,0); w4.rotation.z=-.2; g.add(w4);
-      // Stinger
-      const sting=Con(.08,.22,c3); sting.rotation.z=Math.PI; sting.position.y=.1; g.add(sting);
-      // Antennae
-      const a1=Cyl(.012,.012,.28,0x333); a1.rotation.z=.5; a1.position.set(.1,1.18,0); g.add(a1);
-      const a2=Cyl(.012,.012,.28,0x333); a2.rotation.z=-.5; a2.position.set(-.1,1.18,0); g.add(a2);
-      break;
-    }
-
-    default: { // Generic cute character for I–Z
-      const idx = LETTERS.indexOf(letter);
-      const hue = (idx * 137.5) % 360;
-      // Convert hue to hex roughly
-      const col = new THREE.Color().setHSL(hue/360, .75, .52);
-      const hexCol = col.getHex();
-
-      const base=Sph(.42,hexCol,.4); base.position.y=.5; g.add(base);
-      const face=Sph(.3,hexCol,.3); face.position.set(0,.88,.18); face.scale.set(1,.9,1); g.add(face);
-      // Eyes
-      const e1=Sph(.075,0x111); e1.position.set(.1,.92,.42); g.add(e1);
-      const e2=Sph(.075,0x111); e2.position.set(-.1,.92,.42); g.add(e2);
-      const gl1=Sph(.03,0xffffff); gl1.position.set(.12,.94,.46); g.add(gl1);
-      const gl2=Sph(.03,0xffffff); gl2.position.set(-.08,.94,.46); g.add(gl2);
-      // Nose
-      const nose=Sph(.04,0xff9999); nose.position.set(0,.84,.44); g.add(nose);
-      // Ears
-      const er1=Sph(.14,hexCol,.5); er1.position.set(.32,1.1,.08); g.add(er1);
-      const er2=Sph(.14,hexCol,.5); er2.position.set(-.32,1.1,.08); g.add(er2);
-      // Arms
-      const a1=Cyl(.06,.06,.38,hexCol); a1.rotation.z=.85; a1.position.set(.52,.52,0); g.add(a1);
-      const a2=Cyl(.06,.06,.38,hexCol); a2.rotation.z=-.85; a2.position.set(-.52,.52,0); g.add(a2);
-      // Legs
-      const l1=Cyl(.07,.07,.36,hexCol); l1.rotation.x=.3; l1.position.set(.2,.12,.22); g.add(l1);
-      const l2=Cyl(.07,.07,.36,hexCol); l2.rotation.x=.3; l2.position.set(-.2,.12,.22); g.add(l2);
-      // Emoji sign held up
-      // Letter badge
-      const badge=Box(.36,.36,.04,0xffffff); badge.position.set(0,.55,.42); g.add(badge);
-      const letterSprite = makeTextSprite(letter, hexCol);
-      if(letterSprite){ letterSprite.position.set(0,.55,.44); g.add(letterSprite); }
-    }
-  }
-
-  addShadow(g);
+  addGround(g);
   return g;
 }
 
-function makeTextSprite(text, color) {
-  try {
-    const canvas = document.createElement('canvas');
-    canvas.width=128; canvas.height=128;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle='rgba(0,0,0,0)';
-    ctx.fillRect(0,0,128,128);
-    ctx.fillStyle='#'+color.toString(16).padStart(6,'0');
-    ctx.font='bold 80px Arial';
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillText(text,64,64);
-    const tex=new THREE.CanvasTexture(canvas);
-    const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false});
-    const mesh=new THREE.Mesh(new THREE.PlaneGeometry(.3,.3),mat);
-    return mesh;
-  } catch(e){ return null; }
+/* ── BUTTERFLY ── */
+function buildButterfly(){
+  const g=new THREE.Group();
+  const body=Sph(.16,0x3a1a08,.6); body.scale.set(.55,2.1,.55); body.position.y=.55; g.add(body);
+  const head=Sph(.14,0x4a2510,.4); head.position.y=1.05; g.add(head);
+  const e1=Sph(.04,0x111); e1.position.set(.07,1.09,.12); g.add(e1);
+  const e2=Sph(.04,0x111); e2.position.set(-.07,1.09,.12); g.add(e2);
+  const a1=Cyl(.01,.01,.34,0x333,.7); a1.rotation.z=.38; a1.position.set(.1,1.24,0); g.add(a1);
+  const a2=Cyl(.01,.01,.34,0x333,.7); a2.rotation.z=-.38; a2.position.set(-.1,1.24,0); g.add(a2);
+  const ab1=Sph(.05,0x222); ab1.position.set(.22,1.4,0); g.add(ab1);
+  const ab2=Sph(.05,0x222); ab2.position.set(-.22,1.4,0); g.add(ab2);
+  const wm=new THREE.MeshStandardMaterial({color:0xff6b9d,roughness:.25,metalness:.08,side:THREE.DoubleSide});
+  const wm2=new THREE.MeshStandardMaterial({color:0xf9ca24,roughness:.25,metalness:.08,side:THREE.DoubleSide});
+  const mk=c=>new THREE.Mesh(new THREE.SphereGeometry(.5,14,10),c);
+  const w1=mk(wm); w1.scale.set(1.35,.22,1.38); w1.position.set(.52,.88,0); w1.rotation.z=-.28; w1.castShadow=true; g.add(w1);
+  const w2=mk(wm); w2.scale.set(1.35,.22,1.38); w2.position.set(-.52,.88,0); w2.rotation.z=.28; w2.castShadow=true; g.add(w2);
+  const w3=mk(wm2); w3.scale.set(1.05,.18,1.05); w3.position.set(.44,.62,0); w3.rotation.z=.18; g.add(w3);
+  const w4=mk(wm2); w4.scale.set(1.05,.18,1.05); w4.position.set(-.44,.62,0); w4.rotation.z=-.18; g.add(w4);
+  [.52,.88,-.52,.88].forEach((_,i,a)=>{ if(i%2===0){ const sp=Sph(.08,0x222); sp.position.set(a[i],a[i+1],0); g.add(sp); }});
+  addGround(g); return g;
 }
 
-/* ═══════════════════════════════════════════════
-   RENDER LOOP + VIDEO DETECTION
-═══════════════════════════════════════════════ */
-let detCanvas2d, detCtx2d, lastDetMs=0, autoIdx=0;
-let popInScale=0, targetScale=1;
+/* ── CAT ── */
+function buildCat(){
+  const g=new THREE.Group();
+  const body=Sph(.42,0xe07828,.6); body.scale.set(1,.95,1.05); body.position.y=.45; g.add(body);
+  const head=Sph(.33,0xe07828,.5); head.position.y=.97; g.add(head);
+  const er1=Con(.13,.26,0xe07828,.5); er1.position.set(.2,1.26,0); er1.rotation.z=.32; g.add(er1);
+  const er2=Con(.13,.26,0xe07828,.5); er2.position.set(-.2,1.26,0); er2.rotation.z=-.32; g.add(er2);
+  const ie1=Con(.075,.16,0xe84393,.4); ie1.position.set(.2,1.26,0); ie1.rotation.z=.32; g.add(ie1);
+  const ie2=Con(.075,.16,0xe84393,.4); ie2.position.set(-.2,1.26,0); ie2.rotation.z=-.32; g.add(ie2);
+  const e1=Sph(.07,0x2ecc71,.15); e1.position.set(.12,1.0,.28); g.add(e1);
+  const e2=Sph(.07,0x2ecc71,.15); e2.position.set(-.12,1.0,.28); g.add(e2);
+  const p1=Sph(.04,0x0c0c0c); p1.position.set(.12,1.0,.33); g.add(p1);
+  const p2=Sph(.04,0x0c0c0c); p2.position.set(-.12,1.0,.33); g.add(p2);
+  const gl1=Sph(.022,0xffffff); gl1.position.set(.14,1.02,.35); g.add(gl1);
+  const gl2=Sph(.022,0xffffff); gl2.position.set(-.1,1.02,.35); g.add(gl2);
+  const ns=Sph(.04,0xe84393); ns.position.set(0,.92,.32); g.add(ns);
+  const tail=new THREE.Mesh(new THREE.TorusGeometry(.26,.05,8,12),mat(0xd06020,.5));
+  tail.rotation.set(1.2,0,.8); tail.position.set(.28,.3,-.35); g.add(tail);
+  const pw1=Sph(.1,0xe07828,.55); pw1.scale.set(1.2,.6,1); pw1.position.set(.2,.05,.38); g.add(pw1);
+  const pw2=Sph(.1,0xe07828,.55); pw2.scale.set(1.2,.6,1); pw2.position.set(-.2,.05,.38); g.add(pw2);
+  addGround(g); return g;
+}
 
-function startRenderLoop(video) {
-  detCanvas2d = document.createElement('canvas');
-  detCanvas2d.width=160; detCanvas2d.height=120;
-  detCtx2d = detCanvas2d.getContext('2d');
+/* ── BEE ── */
+function buildBee(){
+  const g=new THREE.Group();
+  const body=Sph(.38,0xf1c40f,.35); body.scale.set(1,1.18,1); body.position.y=.5; g.add(body);
+  [.57,.44,.31].forEach((y,i)=>{ const s=Cyl(.4,.4,.09,i%2?0xf1c40f:0x1a1a1a,.3,18); s.position.y=y; g.add(s); });
+  const head=Sph(.24,0xf1c40f,.3); head.position.y=.95; g.add(head);
+  const e1=Sph(.065,0x111); e1.position.set(.1,.99,.2); g.add(e1);
+  const e2=Sph(.065,0x111); e2.position.set(-.1,.99,.2); g.add(e2);
+  const gl1=Sph(.025,0xffffff); gl1.position.set(.12,1.01,.23); g.add(gl1);
+  const gl2=Sph(.025,0xffffff); gl2.position.set(-.08,1.01,.23); g.add(gl2);
+  const wm=new THREE.MeshStandardMaterial({color:0xddeeff,transparent:true,opacity:.58,roughness:.05,metalness:.1,side:THREE.DoubleSide});
+  [[.5,.78,.38,.35,.5],[-.5,.78,-.38,.35,.5],[.43,.6,.22,.2,.18],[-.43,.6,.22,.2,.18]].forEach(([x,y,rz,sx,sz])=>{
+    const w=new THREE.Mesh(new THREE.SphereGeometry(.3,12,8),wm);
+    w.scale.set(sx/0.3*1.4,.14,sz/0.3*0.9); w.position.set(x,y,0); w.rotation.z=rz*(x>0?1:-1); g.add(w);
+  });
+  const st=Con(.09,.22,0xe67e22,.4); st.rotation.z=Math.PI; st.position.y=.1; g.add(st);
+  const a1=Cyl(.012,.012,.28,0x333); a1.rotation.z=.5; a1.position.set(.1,1.16,0); g.add(a1);
+  const a2=Cyl(.012,.012,.28,0x333); a2.rotation.z=-.5; a2.position.set(-.1,1.16,0); g.add(a2);
+  const ab1=Sph(.045,0x222); ab1.position.set(.22,1.32,0); g.add(ab1);
+  const ab2=Sph(.045,0x222); ab2.position.set(-.22,1.32,0); g.add(ab2);
+  addGround(g); return g;
+}
 
-  function loop() {
-    animId = requestAnimationFrame(loop);
-    if (!renderer || !scene || !camera) return;
+/* ── FROG ── */
+function buildFrog(){
+  const g=new THREE.Group();
+  const body=Sph(.44,0x27ae60,.38); body.scale.set(1,.68,1.12); body.position.y=.32; g.add(body);
+  const belly=Sph(.36,0xd5f5e3,.3); belly.scale.set(.8,.52,.68); belly.position.set(0,.34,.22); g.add(belly);
+  const head=Sph(.34,0x2ecc71,.34); head.position.set(0,.68,.12); g.add(head);
+  const ey1=Sph(.14,0x2ecc71,.3); ey1.position.set(.2,.96,.08); g.add(ey1);
+  const ey2=Sph(.14,0x2ecc71,.3); ey2.position.set(-.2,.96,.08); g.add(ey2);
+  const ep1=Sph(.08,0x111); ep1.position.set(.2,1.0,.18); g.add(ep1);
+  const ep2=Sph(.08,0x111); ep2.position.set(-.2,1.0,.18); g.add(ep2);
+  const gl1=Sph(.033,0xffffff); gl1.position.set(.22,1.02,.22); g.add(gl1);
+  const gl2=Sph(.033,0xffffff); gl2.position.set(-.18,1.02,.22); g.add(gl2);
+  const fl1=Cyl(.055,.055,.4,0x27ae60); fl1.rotation.z=.8; fl1.position.set(.48,.3,.26); g.add(fl1);
+  const fl2=Cyl(.055,.055,.4,0x27ae60); fl2.rotation.z=-.8; fl2.position.set(-.48,.3,.26); g.add(fl2);
+  const bl1=Cyl(.06,.06,.48,0x2ecc71); bl1.rotation.x=.35; bl1.rotation.z=-.2; bl1.position.set(.42,.18,-.28); g.add(bl1);
+  const bl2=Cyl(.06,.06,.48,0x2ecc71); bl2.rotation.x=.35; bl2.rotation.z=.2; bl2.position.set(-.42,.18,-.28); g.add(bl2);
+  const wf1=Con(.18,.08,0x1a8a45); wf1.rotation.x=-Math.PI/2; wf1.position.set(.42,.04,.28); g.add(wf1);
+  const wf2=Con(.18,.08,0x1a8a45); wf2.rotation.x=-Math.PI/2; wf2.position.set(-.42,.04,.28); g.add(wf2);
+  addGround(g); return g;
+}
 
-    const now = Date.now();
+/* ── ELEPHANT ── */
+function buildElephant(){
+  const g=new THREE.Group();
+  const body=Sph(.56,0x95a5a6,.55); body.scale.set(1,.87,1.14); body.position.y=.5; g.add(body);
+  const head=Sph(.38,0x95a5a6,.5); head.position.set(0,1.06,.34); g.add(head);
+  const tr1=Cyl(.1,.1,.32,0x7f8c8d); tr1.rotation.x=.5; tr1.position.set(0,.82,.63); g.add(tr1);
+  const tr2=Cyl(.09,.08,.3,0x7f8c8d); tr2.rotation.x=.82; tr2.position.set(0,.64,.84); g.add(tr2);
+  const trT=Sph(.09,0x7f8c8d); trT.position.set(0,.49,.96); g.add(trT);
+  const eaM=new THREE.MeshStandardMaterial({color:0xd0b8a8,roughness:.6});
+  const ea1=new THREE.Mesh(new THREE.SphereGeometry(.36,14,10),eaM); ea1.scale.set(.28,.7,.09); ea1.position.set(.54,.98,.2); g.add(ea1);
+  const ea2=new THREE.Mesh(new THREE.SphereGeometry(.36,14,10),eaM); ea2.scale.set(.28,.7,.09); ea2.position.set(-.54,.98,.2); g.add(ea2);
+  const e1=Sph(.056,0x2c3e50); e1.position.set(.17,1.12,.63); g.add(e1);
+  const e2=Sph(.056,0x2c3e50); e2.position.set(-.17,1.12,.63); g.add(e2);
+  const tk1=Cyl(.028,.02,.3,0xf0f0e8); tk1.rotation.set(.32,.2,0); tk1.position.set(.14,.9,.68); g.add(tk1);
+  const tk2=Cyl(.028,.02,.3,0xf0f0e8); tk2.rotation.set(.32,-.2,0); tk2.position.set(-.14,.9,.68); g.add(tk2);
+  [[.26,.16,.26],[-.26,.16,.26],[.26,.16,-.22],[-.26,.16,-.22]].forEach(([x,y,z])=>{
+    const leg=Cyl(.11,.1,.38,0x7f8c8d); leg.position.set(x,y,z); g.add(leg);
+    const foot=Cyl(.12,.12,.1,0x95a5a6); foot.position.set(x,.04,z); g.add(foot);
+  });
+  addGround(g); return g;
+}
 
-    // ── Brightness-based card detection ──
-    if (video.readyState >= 2) {
-      try {
-        detCtx2d.drawImage(video, 0, 0, 160, 120);
-        const region = detCtx2d.getImageData(50, 30, 60, 60).data;
-        let bright = 0, contrast = 0;
-        for (let i=0; i<region.length; i+=4) {
-          const lum = (region[i]+region[i+1]+region[i+2])/3;
-          bright += lum;
-        }
-        bright /= region.length/4;
+/* ── DUCK ── */
+function buildDuck(){
+  const g=new THREE.Group();
+  const body=Sph(.48,0xf1c40f,.4); body.scale.set(1,.78,1.22); body.position.y=.42; g.add(body);
+  const tail=Con(.18,.22,0xf39c12,.5); tail.rotation.x=-.7; tail.position.set(0,.55,-.52); g.add(tail);
+  const head=Sph(.24,0xf1c40f,.3); head.position.set(.32,.82,.22); g.add(head);
+  const bill=Cyl(.07,.1,.22,0xe67e22,.3); bill.rotation.z=-Math.PI/2; bill.position.set(.54,.78,.22); g.add(bill);
+  const billT=Sph(.07,0xe67e22,.3); billT.scale.set(.5,.4,1); billT.position.set(.66,.78,.22); g.add(billT);
+  const ey=Sph(.055,0x2c3e50); ey.position.set(.4,.86,.36); g.add(ey);
+  const egl=Sph(.025,0xffffff); egl.position.set(.42,.88,.39); g.add(egl);
+  const wg=Sph(.32,0xf39c12,.4); wg.scale.set(.6,.28,1.3); wg.position.set(-.08,.54,.2); g.add(wg);
+  const f1=Box(.28,.04,.32,0xe67e22,.4); f1.position.set(.14,.02,.3); g.add(f1);
+  const f2=Box(.28,.04,.32,0xe67e22,.4); f2.position.set(-.14,.02,.3); g.add(f2);
+  addGround(g); return g;
+}
 
-        // Detect edge contrast (marker border)
-        const edge = detCtx2d.getImageData(48,28,64,64).data;
-        let dark=0, light=0;
-        for(let i=0;i<edge.length;i+=4){
-          const lum=(edge[i]+edge[i+1]+edge[i+2])/3;
-          if(lum<60) dark++; else if(lum>160) light++;
-        }
-        const hasMarker = dark>80 && light>80 && bright>90;
+/* ── GIRAFFE ── */
+function buildGiraffe(){
+  const g=new THREE.Group();
+  const body=Box(.52,.52,.76,0xf39c12,.55); body.position.y=.44; g.add(body);
+  const neck=Cyl(.12,.1,.82,0xf39c12,.5); neck.rotation.x=.22; neck.position.set(.05,1.08,.18); g.add(neck);
+  const hd=Box(.22,.2,.32,0xf39c12,.5); hd.position.set(.08,1.52,.38); g.add(hd);
+  const oc1=Cyl(.03,.025,.22,0x8B6914,.4); oc1.position.set(.14,1.73,.3); g.add(oc1);
+  const oc2=Cyl(.03,.025,.22,0x8B6914,.4); oc2.position.set(.02,1.73,.3); g.add(oc2);
+  const ob1=Sph(.05,0x8B6914); ob1.position.set(.14,1.84,.3); g.add(ob1);
+  const ob2=Sph(.05,0x8B6914); ob2.position.set(.02,1.84,.3); g.add(ob2);
+  const eye=Sph(.055,0x2c3e50); eye.position.set(.18,1.54,.52); g.add(eye);
+  const egl=Sph(.025,0xffffff); egl.position.set(.2,1.56,.55); g.add(egl);
+  [[0,.6,.35],[.22,.44,.36],[-.18,.28,.36],[.05,.7,-.3],[-.12,.5,.36]].forEach(([x,y,z])=>{
+    const p=Box(.16+Math.random()*.08,.16+Math.random()*.08,.07,0xd35400,.7);
+    p.position.set(x,y,z); p.rotation.y=(Math.random()-.5)*.5; g.add(p);
+  });
+  [[.22,.16,.26],[-.22,.16,.26],[.22,.16,-.26],[-.22,.16,-.26]].forEach(([x,y,z])=>{
+    const leg=Cyl(.07,.07,.44,0xf39c12,.5); leg.position.set(x,y,z); g.add(leg);
+    const hoof=Cyl(.078,.078,.1,0x8B6914,.4); hoof.position.set(x,-.05,z); g.add(hoof);
+  });
+  addGround(g); return g;
+}
 
-        if (hasMarker && now - lastDetMs > 3200) {
-          lastDetMs = now;
-          const detectedLetter = LETTERS[autoIdx % LETTERS.length];
-          autoIdx++;
-          triggerLetter(detectedLetter);
-          flashDetect();
-        }
-      } catch(e){}
-    }
+/* ── GENERIC (I–Z) ── */
+function buildGeneric(letter){
+  const g=new THREE.Group();
+  const idx=LETTERS.indexOf(letter);
+  const col=new THREE.Color().setHSL((idx*137.5)%360/360,.72,.50);
+  const hex=col.getHex();
+  const body=Sph(.42,hex,.4); body.position.y=.5; g.add(body);
+  const face=Sph(.3,hex,.3); face.position.set(0,.88,.18); face.scale.set(1,.9,1); g.add(face);
+  const e1=Sph(.075,0x111); e1.position.set(.1,.92,.42); g.add(e1);
+  const e2=Sph(.075,0x111); e2.position.set(-.1,.92,.42); g.add(e2);
+  const gl1=Sph(.03,0xffffff); gl1.position.set(.12,.94,.46); g.add(gl1);
+  const gl2=Sph(.03,0xffffff); gl2.position.set(-.08,.94,.46); g.add(gl2);
+  const ns=Sph(.04,new THREE.Color(hex).multiplyScalar(.6).getHex()); ns.position.set(0,.84,.44); g.add(ns);
+  const er1=Sph(.14,hex,.5); er1.position.set(.32,1.1,.08); g.add(er1);
+  const er2=Sph(.14,hex,.5); er2.position.set(-.32,1.1,.08); g.add(er2);
+  const a1=Cyl(.06,.06,.38,hex); a1.rotation.z=.85; a1.position.set(.52,.52,0); g.add(a1);
+  const a2=Cyl(.06,.06,.38,hex); a2.rotation.z=-.85; a2.position.set(-.52,.52,0); g.add(a2);
+  const l1=Cyl(.07,.07,.36,hex); l1.rotation.x=.3; l1.position.set(.2,.12,.22); g.add(l1);
+  const l2=Cyl(.07,.07,.36,hex); l2.rotation.x=.3; l2.position.set(-.2,.12,.22); g.add(l2);
+  // Emoji canvas badge
+  try{
+    const cv=document.createElement('canvas'); cv.width=cv.height=128;
+    const cx2=cv.getContext('2d');
+    cx2.font='72px serif'; cx2.textAlign='center'; cx2.textBaseline='middle';
+    cx2.fillText(ALPHA[letter].emoji,64,64);
+    const tex=new THREE.CanvasTexture(cv);
+    const badge=new THREE.Mesh(new THREE.PlaneGeometry(.45,.45),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));
+    badge.position.set(0,.54,.46); g.add(badge);
+  }catch(_){}
+  addGround(g); return g;
+}
 
-    // ── Animate current model ──
-    if (currentGroup) {
-      // Pop-in spring
-      if (currentGroup.scale.x < 1) {
-        const s = Math.min(1, currentGroup.scale.x + 0.06);
-        currentGroup.scale.setScalar(s * manualScale);
-      } else {
-        currentGroup.scale.setScalar(manualScale);
-      }
-      // Auto-rotate + manual offset
-      if (autoRotating) rotY += 0.018;
-      currentGroup.rotation.y = rotY + manualRotY;
-      // Bob
-      currentGroup.position.y = Math.sin(now * 0.0018) * 0.08;
-    }
-
-    renderer.render(scene, camera);
+function buildModel(l){
+  switch(ALPHA[l].type){
+    case 'apple':     return buildApple();
+    case 'butterfly': return buildButterfly();
+    case 'cat':       return buildCat();
+    case 'duck':      return buildDuck();
+    case 'elephant':  return buildElephant();
+    case 'frog':      return buildFrog();
+    case 'giraffe':   return buildGiraffe();
+    case 'bee':       return buildBee();
+    default:          return buildGeneric(l);
   }
-  loop();
 }
 
-function flashDetect() {
-  const el = document.getElementById('detect-flash');
-  el.style.opacity = '1';
-  setTimeout(() => el.style.opacity = '0', 350);
+/* ═══════════════════════════════════════════════════════
+   RENDER LOOP — video brightness analysis for detection
+═══════════════════════════════════════════════════════ */
+function startLoop(){
+  detCv=document.createElement('canvas'); detCv.width=200; detCv.height=150;
+  detCtx=detCv.getContext('2d');
+  (function loop(){
+    animId=requestAnimationFrame(loop);
+    if(!renderer||!scene||!cam3)return;
+    const now=Date.now();
+
+    // Analyse centre of video for bright+high-contrast region (printed card)
+    const vid=document.getElementById('cam-video');
+    if(vid.readyState>=2){
+      try{
+        detCtx.drawImage(vid,0,0,200,150);
+        const px=detCtx.getImageData(65,45,70,60).data;
+        let bright=0,dark=0,light=0;
+        for(let i=0;i<px.length;i+=4){
+          const lum=(px[i]+px[i+1]+px[i+2])/3;
+          bright+=lum; if(lum<55)dark++; else if(lum>165)light++;
+        }
+        bright/=(px.length/4);
+        // Marker = paper (bright) + black border (dark edges)
+        if(dark>60&&light>80&&bright>95&&now-lastDetMs>3000){
+          lastDetMs=now;
+          const nextL=LETTERS[autoIdx%LETTERS.length]; autoIdx++;
+          triggerLetter(nextL);
+          showDetBadge(nextL);
+        }
+      }catch(_){}
+    }
+
+    // Animate
+    if(curModel){
+      if(curModel.scale.x<1){const s=Math.min(1,curModel.scale.x+.055);curModel.scale.setScalar(s*mScale);}
+      else curModel.scale.setScalar(mScale);
+      if(autoRot)rotY+=.016;
+      curModel.rotation.y=rotY+mRotY;
+      curModel.position.y=Math.sin(now*.0018)*.07;
+    }
+    renderer.render(scene,cam3);
+  })();
 }
 
-/* ═══════════════════════════════════════════════
+function showDetBadge(letter){
+  const el=document.getElementById('det-badge');
+  el.textContent=`✨ Letter ${letter} — ${ALPHA[letter].word}!`;
+  el.classList.add('pop');
+  setTimeout(()=>el.classList.remove('pop'),2200);
+}
+
+/* ═══════════════════════════════════════════════════════
    TRIGGER LETTER
-═══════════════════════════════════════════════ */
-function triggerLetter(letter) {
-  if (!ALPHA[letter] || !models3D[letter]) return;
+═══════════════════════════════════════════════════════ */
+function triggerLetter(letter){
+  if(!ALPHA[letter])return;
   clearTimeout(hideTimer);
 
-  // Hide previous
-  if (currentGroup) {
-    currentGroup.visible = false;
-    currentGroup.scale.setScalar(0);
-  }
+  if(curModel){curModel.visible=false;curModel.scale.setScalar(0);}
+  curLetter=letter;
+  curModel=models[letter];
+  curModel.visible=true; curModel.scale.setScalar(0);
+  curModel.rotation.y=0; curModel.position.y=0;
+  mScale=1.0; mRotY=0; rotY=0; autoRot=true;
 
-  currentLetter = letter;
-  currentGroup = models3D[letter];
-  currentGroup.visible = true;
-  currentGroup.scale.setScalar(0);
-  currentGroup.rotation.y = 0;
-  currentGroup.position.y = 0;
-  manualScale = 1.0;
-  manualRotY = 0;
-  rotY = 0;
-  autoRotating = true;
-
-  // Update strip
-  LETTERS.forEach(l => document.getElementById('lb-' + l)?.classList.remove('active'));
-  const lb = document.getElementById('lb-' + letter);
+  // Strip
+  LETTERS.forEach(l=>document.getElementById('lb-'+l)?.classList.remove('active'));
+  const lb=document.getElementById('lb-'+letter);
   lb?.classList.add('active');
-  lb?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  lb?.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
 
-  // Update info card
-  const d = ALPHA[letter];
-  document.getElementById('icEmoji').textContent = d.emoji;
-  document.getElementById('icLetterLbl').textContent = 'LETTER ' + letter;
-  document.getElementById('icWord').textContent = d.word;
-  document.getElementById('icPh').textContent = '🔊 ' + d.ph;
-  document.getElementById('icFact').textContent = d.fact;
+  // Info card
+  const d=ALPHA[letter];
+  document.getElementById('icEm').textContent=d.emoji;
+  document.getElementById('icTag').textContent='LETTER '+letter;
+  document.getElementById('icWord').textContent=d.word;
+  document.getElementById('icPh').textContent='🔊 '+d.ph;
+  document.getElementById('icFact').textContent=d.fact;
   document.getElementById('info-card').classList.add('show');
-  document.getElementById('hint-text').style.opacity = '0';
-  document.getElementById('scanRing').style.borderColor = '#FFE66D';
+  document.getElementById('hint').style.opacity='0';
+  document.getElementById('scanLbl').textContent='✅ '+letter+' — '+d.word.toUpperCase();
 
-  // 🔊 AUTO SPEAK
-  setTimeout(() => speakLetter(letter), 400);
+  // Auto speak
+  setTimeout(()=>speak(d.ph),350);
 
   // Score
-  if (!found.has(letter)) {
-    found.add(letter);
-    score += 10;
-    document.getElementById('scoreNum').textContent = score;
-    document.getElementById('progFill').style.width = (found.size / LETTERS.length * 100) + '%';
+  if(!found.has(letter)){
+    found.add(letter); score+=10;
+    document.getElementById('scoreNum').textContent=score;
+    document.getElementById('progFill').style.width=(found.size/LETTERS.length*100)+'%';
     lb?.classList.add('found');
   }
 
-  hideTimer = setTimeout(() => {
+  hideTimer=setTimeout(()=>{
     document.getElementById('info-card').classList.remove('show');
-    document.getElementById('hint-text').style.opacity = '1';
-    document.getElementById('scanRing').style.borderColor = '#4ECDC4';
-  }, 7000);
+    document.getElementById('hint').style.opacity='1';
+    document.getElementById('scanLbl').textContent='POINT AT A LETTER CARD';
+  },7000);
 }
 
-/* ═══════════════════════════════════════════════
-   SPEECH — Web Speech API
-═══════════════════════════════════════════════ */
-let speechSynth = window.speechSynthesis;
-
-function speakLetter(letter) {
-  const d = ALPHA[letter];
-  speak(d.ph);
+/* ═══════════════════════════════════════════════════════
+   SPEECH
+═══════════════════════════════════════════════════════ */
+const synth=window.speechSynthesis;
+function speak(text){
+  if(!synth)return;
+  synth.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=.82; u.pitch=1.1; u.volume=1;
+  const voices=synth.getVoices();
+  const v=voices.find(v=>v.name.includes('Samantha')||v.name.includes('Karen')||v.lang==='en-GB'||v.lang.startsWith('en'));
+  if(v)u.voice=v;
+  synth.speak(u);
 }
+function speakCurrent(){ if(curLetter)speak(ALPHA[curLetter].ph); }
 
-function speakCurrent() {
-  if (currentLetter) {
-    const d = ALPHA[currentLetter];
-    speak(d.ph);
+/* ═══════════════════════════════════════════════════════
+   CONTROLS — zoom, rotate, reset
+═══════════════════════════════════════════════════════ */
+function setupControls(){
+  function hold(id,fn){
+    let iv; const el=document.getElementById(id);
+    el.addEventListener('pointerdown',()=>{fn();iv=setInterval(fn,75);});
+    el.addEventListener('pointerup',()=>clearInterval(iv));
+    el.addEventListener('pointerleave',()=>clearInterval(iv));
   }
+  hold('zIn', ()=>{mScale=Math.min(3,mScale+.055);});
+  hold('zOut',()=>{mScale=Math.max(.25,mScale-.055);});
+  hold('rL',  ()=>{autoRot=false;mRotY-=.08;});
+  hold('rR',  ()=>{autoRot=false;mRotY+=.08;});
+  document.getElementById('rst').addEventListener('click',()=>{mScale=1;mRotY=0;rotY=0;autoRot=true;});
 }
 
-function speak(text) {
-  if (!speechSynth) return;
-  speechSynth.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.rate = 0.82;
-  utt.pitch = 1.1;
-  utt.volume = 1;
-  // Try to pick a friendly voice
-  const voices = speechSynth.getVoices();
-  const friendly = voices.find(v => v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Google UK') || v.lang.startsWith('en'));
-  if (friendly) utt.voice = friendly;
-  speechSynth.speak(utt);
+/* ── Pinch & two-finger rotate ── */
+let prevPinch=null, prevAngle=null;
+function setupPinch(){
+  const c=document.getElementById('ar-view');
+  c.addEventListener('touchstart',e=>{
+    if(e.touches.length===2){prevPinch=pDist(e.touches);prevAngle=pAngle(e.touches);}
+  },{passive:true});
+  c.addEventListener('touchmove',e=>{
+    if(e.touches.length===2){
+      const d=pDist(e.touches);
+      if(prevPinch){mScale=Math.min(3,Math.max(.25,mScale+(d-prevPinch)/200));}
+      prevPinch=d;
+      const a=pAngle(e.touches);
+      if(prevAngle!=null){autoRot=false;mRotY+=(a-prevAngle)*1.5;}
+      prevAngle=a;
+    }
+  },{passive:true});
+  c.addEventListener('touchend',e=>{if(e.touches.length<2){prevPinch=null;prevAngle=null;}},{passive:true});
 }
+function pDist(t){const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;return Math.sqrt(dx*dx+dy*dy);}
+function pAngle(t){return Math.atan2(t[1].clientY-t[0].clientY,t[1].clientX-t[0].clientX);}
 
-/* ═══════════════════════════════════════════════
-   CONTROLS — Zoom, Rotate, Reset
-═══════════════════════════════════════════════ */
-function setupControls() {
-  // Button hold support
-  function hold(id, fn) {
-    let iv;
-    const el = document.getElementById(id);
-    el.addEventListener('pointerdown', () => { fn(); iv = setInterval(fn, 80); });
-    el.addEventListener('pointerup', () => clearInterval(iv));
-    el.addEventListener('pointerleave', () => clearInterval(iv));
-  }
-
-  hold('zoomInBtn',  () => { manualScale = Math.min(3.0, manualScale + 0.05); });
-  hold('zoomOutBtn', () => { manualScale = Math.max(0.3, manualScale - 0.05); });
-  hold('rotLeftBtn', () => { autoRotating=false; manualRotY -= 0.08; });
-  hold('rotRightBtn',() => { autoRotating=false; manualRotY += 0.08; });
-
-  document.getElementById('resetBtn').addEventListener('click', () => {
-    manualScale = 1.0;
-    manualRotY = 0;
-    rotY = 0;
-    autoRotating = true;
+/* ═══════════════════════════════════════════════════════
+   STRIP
+═══════════════════════════════════════════════════════ */
+function buildStrip(){
+  const t=document.getElementById('stripTrack');
+  if(t.children.length)return;
+  LETTERS.forEach(l=>{
+    const b=document.createElement('button');
+    b.className='lb'; b.id='lb-'+l;
+    b.innerHTML=l+'<span class="em">'+ALPHA[l].emoji+'</span>';
+    b.onclick=()=>triggerLetter(l);
+    t.appendChild(b);
   });
 }
 
-/* ═══════════════════════════════════════════════
-   TOUCH GESTURES — Pinch Zoom + Two-Finger Rotate
-═══════════════════════════════════════════════ */
-let prevPinchDist = null;
-let prevTouchAngle = null;
-
-function setupGestures(container) {
-  container.addEventListener('touchstart', e => {
-    if (e.touches.length === 2) {
-      prevPinchDist = pinchDist(e.touches);
-      prevTouchAngle = touchAngle(e.touches);
-    }
-  }, { passive: true });
-
-  container.addEventListener('touchmove', e => {
-    if (e.touches.length === 2) {
-      // Pinch zoom
-      const dist = pinchDist(e.touches);
-      if (prevPinchDist) {
-        const delta = (dist - prevPinchDist) / 180;
-        manualScale = Math.min(3.0, Math.max(0.3, manualScale + delta));
-      }
-      prevPinchDist = dist;
-
-      // Two-finger rotate
-      const angle = touchAngle(e.touches);
-      if (prevTouchAngle !== null) {
-        autoRotating = false;
-        manualRotY += (angle - prevTouchAngle) * 1.5;
-      }
-      prevTouchAngle = angle;
-    }
-  }, { passive: true });
-
-  container.addEventListener('touchend', e => {
-    if (e.touches.length < 2) {
-      prevPinchDist = null;
-      prevTouchAngle = null;
-    }
-  }, { passive: true });
-}
-
-function pinchDist(touches) {
-  const dx = touches[0].clientX - touches[1].clientX;
-  const dy = touches[0].clientY - touches[1].clientY;
-  return Math.sqrt(dx*dx + dy*dy);
-}
-function touchAngle(touches) {
-  return Math.atan2(
-    touches[1].clientY - touches[0].clientY,
-    touches[1].clientX - touches[0].clientX
-  );
-}
-
-/* ═══════════════════════════════════════════════
-   LETTER STRIP
-═══════════════════════════════════════════════ */
-function buildStrip() {
-  const track = document.getElementById('stripTrack');
-  if (track.children.length) return;
-  LETTERS.forEach(l => {
-    const btn = document.createElement('button');
-    btn.className = 'lb';
-    btn.id = 'lb-' + l;
-    btn.innerHTML = l + '<span class="em">' + ALPHA[l].emoji + '</span>';
-    btn.onclick = () => triggerLetter(l);
-    track.appendChild(btn);
-  });
-}
-
-/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════
    STOP AR
-═══════════════════════════════════════════════ */
-function stopAR() {
-  if (animId) { cancelAnimationFrame(animId); animId = null; }
-  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-  if (speechSynth) speechSynth.cancel();
-  if (renderer) { renderer.dispose(); renderer = null; }
-  scene = null; camera = null;
-  models3D = {}; currentGroup = null; currentLetter = null;
-  const c = document.getElementById('ar-container');
-  c.classList.remove('on');
-  c.innerHTML = '';
-  document.getElementById('hud').style.display = 'none';
-  document.getElementById('stripTrack').innerHTML = '';
+═══════════════════════════════════════════════════════ */
+function stopAR(){
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  if(synth)synth.cancel();
+  if(renderer){renderer.dispose();renderer=null;}
+  scene=null;cam3=null;models={};curModel=null;curLetter=null;
+  const v=document.getElementById('cam-video'); if(v)v.srcObject=null;
+  document.getElementById('hud').style.display='none';
+  document.getElementById('stripTrack').innerHTML='';
+  document.getElementById('info-card').classList.remove('show');
   only('splash');
 }
 </script>
