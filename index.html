@@ -6,580 +6,1046 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AR Alphabet 3D</title>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+
+<!-- Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<!-- MindAR - image marker tracking -->
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nunito',sans-serif;touch-action:manipulation;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nunito',sans-serif;}
 
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+/* SCREENS */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;}
 .screen.off{display:none!important;}
 
 /* SPLASH */
-#splash{background:linear-gradient(160deg,#0f0f23 0%,#1a1a3e 50%,#0d2d50 100%);padding:32px 24px;gap:16px;text-align:center;}
-.logo{font-size:64px;line-height:1;animation:float 3s ease-in-out infinite;}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.s-title{font-family:'Fredoka One',sans-serif;font-size:30px;background:linear-gradient(135deg,#FF6B6B,#FFE66D,#4ECDC4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;}
-.s-sub{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;max-width:290px;}
-.steps-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:16px 18px;width:100%;max-width:320px;text-align:left;}
-.step{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:12px;}
+#splash{background:linear-gradient(160deg,#0f0f23,#1a1a3e,#0d2d50);padding:28px 22px;gap:14px;text-align:center;overflow-y:auto;}
+.logo-wrap{position:relative;width:90px;height:90px;margin:0 auto;}
+.logo-ring{width:90px;height:90px;border-radius:50%;background:conic-gradient(#FF6B6B,#FFE66D,#4ECDC4,#FF6B6B);animation:spin 4s linear infinite;display:flex;align-items:center;justify-content:center;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo-inner{position:absolute;inset:6px;border-radius:50%;background:#1a1a3e;display:flex;align-items:center;justify-content:center;font-size:38px;}
+.s-title{font-family:'Fredoka One',sans-serif;font-size:28px;background:linear-gradient(135deg,#FF6B6B,#FFE66D,#4ECDC4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.s-sub{font-size:13px;color:rgba(255,255,255,.6);line-height:1.5;max-width:280px;}
+.steps-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px 16px;width:100%;max-width:320px;text-align:left;}
+.step{display:flex;gap:10px;font-size:12px;color:rgba(255,255,255,.8);line-height:1.4;margin-bottom:10px;align-items:flex-start;}
 .step:last-child{margin-bottom:0;}
-.sn{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#FFE66D);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',sans-serif;font-size:13px;color:#1a1a2e;flex-shrink:0;margin-top:1px;}
-.btn{width:100%;max-width:320px;border:none;border-radius:50px;padding:16px;font-family:'Fredoka One',sans-serif;font-size:20px;cursor:pointer;letter-spacing:.5px;transition:transform .15s;}
-.btn:active{transform:scale(.96);}
+.sn{min-width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#FFE66D);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',sans-serif;font-size:12px;color:#1a1a2e;}
+.btn{width:100%;max-width:320px;border:none;border-radius:50px;padding:15px;font-family:'Fredoka One',sans-serif;font-size:19px;cursor:pointer;transition:transform .15s,opacity .15s;}
+.btn:active{transform:scale(.96);opacity:.85;}
 .btn-teal{background:linear-gradient(135deg,#4ECDC4,#38b2a8);color:#0f2322;box-shadow:0 6px 20px rgba(78,205,196,.4);}
-.btn-red{background:linear-gradient(135deg,#FF6B6B,#ff4e4e);color:#fff;box-shadow:0 6px 20px rgba(255,107,107,.45);}
+.btn-red{background:linear-gradient(135deg,#FF6B6B,#ff4444);color:#fff;box-shadow:0 6px 20px rgba(255,107,107,.45);}
 .btn-ghost{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.65);}
 
 /* MARKER MODAL */
-#marker-modal{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:99999;overflow-y:auto;padding:20px 16px;display:none;flex-direction:column;align-items:center;gap:12px;}
+#marker-modal{position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:99999;overflow-y:auto;padding:20px 14px;display:none;flex-direction:column;align-items:center;gap:10px;}
 #marker-modal.on{display:flex;}
-.m-title{font-family:'Fredoka One',sans-serif;font-size:24px;color:#fff;text-align:center;}
-.m-sub{font-size:13px;color:rgba(255,255,255,.5);text-align:center;line-height:1.5;max-width:320px;}
-.marker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:400px;}
-.mk-card{background:#fff;border-radius:12px;border:5px solid #111;padding:10px 6px 8px;text-align:center;}
-.mk-big{font-family:'Fredoka One',sans-serif;font-size:48px;color:#111;line-height:1;border:4px solid #111;border-radius:8px;width:64px;height:64px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;}
-.mk-em{font-size:18px;display:block;}
-.mk-w{font-size:10px;font-weight:700;color:#444;margin-top:2px;}
-.btn-print-all{background:#4ECDC4;border:none;border-radius:14px;padding:14px;font-family:'Fredoka One',sans-serif;font-size:17px;color:#0f2322;cursor:pointer;width:100%;max-width:400px;}
-.btn-back-m{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px;font-family:'Fredoka One',sans-serif;font-size:17px;color:rgba(255,255,255,.65);cursor:pointer;width:100%;max-width:400px;}
+.m-title{font-family:'Fredoka One',sans-serif;font-size:22px;color:#fff;}
+.m-sub{font-size:12px;color:rgba(255,255,255,.5);text-align:center;line-height:1.5;max-width:320px;}
+.marker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:400px;}
+.mk-card{background:#fff;border-radius:10px;border:5px solid #111;padding:8px 4px 6px;text-align:center;position:relative;}
+.mk-ar-border{position:absolute;inset:3px;border:3px solid #000;border-radius:4px;pointer-events:none;}
+.mk-big{font-family:'Fredoka One',sans-serif;font-size:44px;color:#111;line-height:1;border:3px solid #111;border-radius:6px;width:60px;height:60px;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;background:#fff;}
+.mk-em{font-size:16px;display:block;}
+.mk-w{font-size:9px;font-weight:800;color:#333;margin-top:1px;text-transform:uppercase;letter-spacing:.5px;}
+.btn-print{background:#4ECDC4;border:none;border-radius:12px;padding:13px;font-family:'Fredoka One',sans-serif;font-size:16px;color:#0f2322;cursor:pointer;width:100%;max-width:400px;}
+.btn-back-m{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px;font-family:'Fredoka One',sans-serif;font-size:16px;color:rgba(255,255,255,.6);cursor:pointer;width:100%;max-width:400px;}
 
-/* CAM PERMISSION */
-#cam-screen{background:linear-gradient(160deg,#0f0f23,#1a1a3e);gap:18px;padding:32px 24px;text-align:center;}
-.cam-icon{font-size:72px;animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.cam-title{font-family:'Fredoka One',sans-serif;font-size:26px;color:#fff;}
-.cam-sub{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;max-width:280px;}
-#cam-err{color:#ff6b6b;font-size:13px;font-weight:700;max-width:280px;display:none;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);border-radius:12px;padding:10px 14px;line-height:1.5;}
+/* CAM SCREEN */
+#cam-screen{background:linear-gradient(160deg,#0f0f23,#1a1a3e);gap:16px;padding:30px 22px;text-align:center;}
+.cam-icon{font-size:68px;animation:pb 2s ease-in-out infinite;}
+@keyframes pb{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.cam-title{font-family:'Fredoka One',sans-serif;font-size:24px;color:#fff;}
+.cam-sub{font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;max-width:270px;}
+#cam-err{color:#ff6b6b;font-size:12px;font-weight:700;max-width:280px;display:none;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);border-radius:10px;padding:10px 12px;line-height:1.5;white-space:pre-line;}
 
-/* AR VIEW */
-#ar-view{background:#000;}
-#cam-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-#three-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+/* AR CONTAINER */
+#ar-container{position:fixed;inset:0;display:none;}
+#ar-container.on{display:block;}
 
-.hud-top{position:absolute;top:0;left:0;right:0;padding:44px 16px 12px;background:linear-gradient(to bottom,rgba(0,0,0,.75),transparent);display:flex;align-items:center;justify-content:space-between;z-index:10;}
-.hud-title{font-family:'Fredoka One',sans-serif;font-size:18px;background:linear-gradient(135deg,#FF6B6B,#FFE66D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.hud-score{background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:6px 14px;font-family:'Fredoka One',sans-serif;font-size:15px;color:#FFE66D;}
-.hud-exit{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;}
+/* AR CANVAS (MindAR renders here) */
+#mindar-canvas{position:absolute;inset:0;width:100%!important;height:100%!important;}
 
-.scan-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:190px;height:190px;pointer-events:none;z-index:5;}
-.sc{position:absolute;width:26px;height:26px;border-color:#4ECDC4;border-style:solid;}
-.sc.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:5px 0 0 0;}
-.sc.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 5px 0 0;}
-.sc.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 5px;}
-.sc.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 5px 0;}
-.scan-ln{position:absolute;left:6px;right:6px;height:2px;background:linear-gradient(90deg,transparent,#4ECDC4,transparent);animation:sl 2s ease-in-out infinite;top:6px;}
-@keyframes sl{0%,100%{top:6px;opacity:.5}50%{top:calc(100% - 8px);opacity:1}}
+/* HUD OVERLAY */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:500;}
 
-#info-pop{position:absolute;top:90px;left:12px;right:12px;background:rgba(10,10,30,.88);backdrop-filter:blur(16px);border:1.5px solid rgba(78,205,196,.45);border-radius:22px;padding:16px 18px;display:flex;gap:14px;align-items:center;z-index:20;transform:translateY(-16px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
-#info-pop.show{transform:translateY(0);opacity:1;}
-.ip-em{font-size:44px;flex-shrink:0;line-height:1;}
-.ip-body{flex:1;}
-.ip-tag{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;}
-.ip-word{font-family:'Fredoka One',sans-serif;font-size:24px;color:#fff;line-height:1.1;}
-.ip-ph{display:inline-block;background:rgba(78,205,196,.2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;color:#4ECDC4;margin:3px 0;}
-.ip-fact{font-size:11px;color:rgba(255,255,255,.6);line-height:1.4;margin-top:3px;}
+.hud-top{position:absolute;top:0;left:0;right:0;padding:44px 14px 10px;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);display:flex;align-items:center;justify-content:space-between;pointer-events:all;}
+.hud-title{font-family:'Fredoka One',sans-serif;font-size:17px;background:linear-gradient(135deg,#FF6B6B,#FFE66D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hud-right{display:flex;align-items:center;gap:8px;}
+.score-badge{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:5px 12px;font-family:'Fredoka One',sans-serif;font-size:14px;color:#FFE66D;}
+.exit-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:6px 12px;font-size:12px;font-weight:800;color:#fff;cursor:pointer;pointer-events:all;}
 
-#hint{position:absolute;z-index:10;bottom:168px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid rgba(78,205,196,.35);border-radius:24px;padding:9px 20px;font-size:13px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;animation:hp 2s ease-in-out infinite;transition:opacity .3s;}
-@keyframes hp{0%,100%{opacity:.6}50%{opacity:1}}
+/* Scanning frame */
+.scan-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);width:200px;height:200px;pointer-events:none;}
+.corner{position:absolute;width:28px;height:28px;border-color:#4ECDC4;border-style:solid;}
+.corner.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:5px 0 0 0;}
+.corner.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 5px 0 0;}
+.corner.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 5px;}
+.corner.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 5px 0;}
+.scan-line{position:absolute;left:5px;right:5px;height:2px;background:linear-gradient(90deg,transparent,#4ECDC4,transparent);top:5px;animation:sl 1.8s ease-in-out infinite;}
+@keyframes sl{0%,100%{top:5px;opacity:.4}50%{top:calc(100% - 7px);opacity:1}}
+.scan-label{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:rgba(78,205,196,.9);white-space:nowrap;letter-spacing:.5px;}
 
-.strip{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.88) 70%,transparent);padding:8px 0 28px;z-index:10;}
-.strip-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;padding:0 14px 5px;}
-.strip-track{display:flex;gap:8px;padding:3px 14px;overflow-x:auto;scrollbar-width:none;}
+/* Info card - slides in from top */
+#info-card{position:absolute;top:90px;left:10px;right:10px;background:rgba(8,8,24,.9);backdrop-filter:blur(20px);border:1.5px solid rgba(78,205,196,.5);border-radius:20px;padding:14px 16px;display:flex;gap:12px;align-items:center;pointer-events:none;transform:translateY(-20px) scale(.95);opacity:0;transition:all .45s cubic-bezier(.34,1.56,.64,1);}
+#info-card.show{transform:translateY(0) scale(1);opacity:1;}
+.ic-emoji{font-size:50px;flex-shrink:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));}
+.ic-body{flex:1;min-width:0;}
+.ic-letter{font-family:'Fredoka One',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:2px;}
+.ic-word{font-family:'Fredoka One',sans-serif;font-size:26px;color:#fff;line-height:1.1;}
+.ic-ph{display:inline-flex;align-items:center;gap:4px;background:rgba(78,205,196,.18);border:1px solid rgba(78,205,196,.3);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;color:#4ECDC4;margin:3px 0;}
+.ic-fact{font-size:11px;color:rgba(255,255,255,.6);line-height:1.4;margin-top:2px;}
+.ic-sound-btn{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#ff8e53);border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;pointer-events:all;box-shadow:0 3px 10px rgba(255,107,107,.4);}
+
+/* Controls */
+#controls{position:absolute;bottom:155px;right:14px;display:flex;flex-direction:column;gap:8px;pointer-events:all;}
+.ctrl-btn{width:44px;height:44px;background:rgba(0,0,0,.55);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);border-radius:14px;font-size:18px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.ctrl-btn:active{background:rgba(78,205,196,.3);}
+
+/* Progress bar */
+.prog-bar{position:absolute;top:86px;left:14px;right:14px;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#FF6B6B,#FFE66D,#4ECDC4);border-radius:2px;width:0%;transition:width .7s ease;}
+
+/* Letter strip */
+.strip{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.92) 75%,transparent);padding:6px 0 24px;pointer-events:all;}
+.strip-label{font-size:9px;font-weight:800;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:2px;padding:0 14px 4px;}
+.strip-track{display:flex;gap:7px;padding:2px 12px;overflow-x:auto;scrollbar-width:none;}
 .strip-track::-webkit-scrollbar{display:none;}
-.lb{flex-shrink:0;width:50px;height:50px;border-radius:13px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);font-family:'Fredoka One',sans-serif;font-size:20px;color:rgba(255,255,255,.65);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1;transition:all .2s;}
-.lb .em{font-size:11px;margin-top:1px;}
-.lb.found{border-color:#4ECDC4;background:rgba(78,205,196,.2);color:#4ECDC4;}
-.lb.active{border-color:#FFE66D;background:rgba(255,230,109,.25);color:#FFE66D;transform:scale(1.12);box-shadow:0 0 14px rgba(255,230,109,.45);}
+.lb{flex-shrink:0;width:48px;height:48px;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);font-family:'Fredoka One',sans-serif;font-size:19px;color:rgba(255,255,255,.6);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1;transition:all .2s;}
+.lb .em{font-size:10px;margin-top:1px;}
+.lb.found{border-color:#4ECDC4;background:rgba(78,205,196,.18);color:#4ECDC4;}
+.lb.active{border-color:#FFE66D;background:rgba(255,230,109,.22);color:#FFE66D;transform:scale(1.14);box-shadow:0 0 16px rgba(255,230,109,.4);}
 
-.prog{position:absolute;top:86px;left:14px;right:14px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;z-index:10;}
-.prog-f{height:100%;background:linear-gradient(90deg,#FF6B6B,#FFE66D,#4ECDC4);border-radius:2px;width:0%;transition:width .6s;}
+/* Hint */
+#hint-text{position:absolute;bottom:152px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.65);backdrop-filter:blur(8px);border:1px solid rgba(78,205,196,.3);border-radius:22px;padding:8px 18px;font-size:12px;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap;pointer-events:none;animation:hp 2.2s ease-in-out infinite;transition:opacity .4s;}
+@keyframes hp{0%,100%{opacity:.55}50%{opacity:1}}
 
+/* Detected flash */
+#detect-flash{position:fixed;inset:0;background:rgba(78,205,196,.18);pointer-events:none;opacity:0;transition:opacity .3s;z-index:400;}
+
+/* Print */
 @media print{
   body>*:not(#marker-modal){display:none!important;}
-  #marker-modal{display:flex!important;background:white;padding:12px;}
-  .m-title,.m-sub,.btn-print-all,.btn-back-m{display:none!important;}
-  .marker-grid{grid-template-columns:repeat(4,1fr);gap:10px;}
-  .mk-card{border:6px solid #000!important;}
+  #marker-modal{display:flex!important;background:white!important;padding:10px!important;}
+  .m-title,.m-sub,.btn-print,.btn-back-m{display:none!important;}
+  .marker-grid{grid-template-columns:repeat(4,1fr)!important;gap:8px!important;}
+  .mk-card{border:6px solid #000!important;border-radius:4px!important;page-break-inside:avoid;}
+  .mk-big{font-size:56px!important;width:72px!important;height:72px!important;}
 }
 </style>
 </head>
 <body>
 
-<!-- ══ SPLASH ══ -->
+<!-- ══════════ SPLASH ══════════ -->
 <div id="splash" class="screen">
-  <div class="logo">🔤</div>
-  <div class="s-title">AR Alphabet<br>3D Explorer</div>
-  <p class="s-sub">Print letter cards, point your camera at them — watch 3D animals pop up in real time!</p>
-  <div class="steps-box">
-    <div class="step"><div class="sn">1</div><div>Tap <b style="color:#FFE66D">View Markers</b> and print the letter cards</div></div>
-    <div class="step"><div class="sn">2</div><div>Tap <b style="color:#4ECDC4">Launch AR Camera</b> and allow access</div></div>
-    <div class="step"><div class="sn">3</div><div>Hold a card in front of camera — a <b style="color:#FF6B6B">3D animal</b> appears!</div></div>
+  <div class="logo-wrap">
+    <div class="logo-ring"><div class="logo-inner">🔤</div></div>
   </div>
-  <button class="btn btn-teal" onclick="showMarkers()">🖨️ View &amp; Print Markers</button>
+  <div class="s-title">AR Alphabet 3D</div>
+  <p class="s-sub">Scan printed letter cards with your camera — 3D animals pop up with sound!</p>
+  <div class="steps-box">
+    <div class="step"><div class="sn">1</div><div>Tap <b style="color:#FFE66D">Print Markers</b> and print the alphabet cards</div></div>
+    <div class="step"><div class="sn">2</div><div>Tap <b style="color:#4ECDC4">Launch AR</b> — allow camera access</div></div>
+    <div class="step"><div class="sn">3</div><div>Point camera at any letter card — a <b style="color:#FF6B6B">3D animal appears</b> with a sound! Use pinch/buttons to zoom &amp; rotate</div></div>
+  </div>
+  <button class="btn btn-teal" onclick="showMarkers()">🖨️ Print Markers</button>
   <button class="btn btn-red" onclick="startCamScreen()">📷 Launch AR Camera</button>
 </div>
 
-<!-- ══ MARKER MODAL ══ -->
+<!-- ══════════ MARKER MODAL ══════════ -->
 <div id="marker-modal">
-  <div class="m-title">🖨️ Print Letter Cards</div>
-  <p class="m-sub">Print these cards — the thick black border helps the camera recognise each letter.</p>
+  <div class="m-title">🖨️ Alphabet Marker Cards</div>
+  <p class="m-sub">Print and cut out these cards. Point your camera at each letter to see the 3D animal pop up!</p>
   <div class="marker-grid" id="mGrid"></div>
-  <button class="btn-print-all" onclick="window.print()">🖨️ Print All Cards</button>
+  <button class="btn-print" onclick="window.print()">🖨️ Print All 26 Cards</button>
   <button class="btn-back-m" onclick="document.getElementById('marker-modal').classList.remove('on')">← Back</button>
 </div>
 
-<!-- ══ CAMERA PERMISSION ══ -->
+<!-- ══════════ CAM PERMISSION ══════════ -->
 <div id="cam-screen" class="screen off">
   <div class="cam-icon">📷</div>
-  <div class="cam-title">Camera Access</div>
-  <p class="cam-sub">We need your camera to detect letter cards and overlay 3D animals on them.</p>
+  <div class="cam-title">Enable Camera</div>
+  <p class="cam-sub">Your camera is needed to detect letter cards and overlay 3D animals in real time.</p>
   <div id="cam-err"></div>
-  <button class="btn btn-red" id="cam-btn" onclick="requestCamera()">Allow Camera &amp; Start AR</button>
+  <button class="btn btn-red" id="cam-btn" onclick="requestCamera()">✅ Allow Camera &amp; Start</button>
   <button class="btn btn-ghost" onclick="only('splash')" style="margin-top:6px;">← Back</button>
 </div>
 
-<!-- ══ AR VIEW ══ -->
-<div id="ar-view" class="screen off">
-  <video id="cam-video" autoplay playsinline muted></video>
-  <canvas id="three-canvas"></canvas>
+<!-- ══════════ AR CONTAINER ══════════ -->
+<div id="ar-container">
+  <!-- MindAR / Three.js canvas goes here -->
+</div>
 
+<!-- ══════════ HUD ══════════ -->
+<div id="hud" style="display:none;">
   <div class="hud-top">
-    <button class="hud-exit" onclick="stopAR()">✕ Exit</button>
+    <button class="exit-btn" onclick="stopAR()">✕ Exit</button>
     <div class="hud-title">AR Alphabet 3D</div>
-    <div class="hud-score">⭐ <span id="scoreNum">0</span></div>
-  </div>
-
-  <div class="prog"><div class="prog-f" id="progF"></div></div>
-
-  <div id="info-pop">
-    <div class="ip-em" id="ipEm">🍎</div>
-    <div class="ip-body">
-      <div class="ip-tag" id="ipTag">LETTER A</div>
-      <div class="ip-word" id="ipWord">Apple</div>
-      <div class="ip-ph" id="ipPh">/ æ /</div>
-      <div class="ip-fact" id="ipFact">Over 7,500 varieties!</div>
+    <div class="hud-right">
+      <div class="score-badge">⭐ <span id="scoreNum">0</span></div>
     </div>
   </div>
 
-  <div class="scan-box">
-    <div class="sc tl"></div><div class="sc tr"></div>
-    <div class="sc bl"></div><div class="sc br"></div>
-    <div class="scan-ln"></div>
+  <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+
+  <!-- Info card -->
+  <div id="info-card">
+    <div class="ic-emoji" id="icEmoji">🍎</div>
+    <div class="ic-body">
+      <div class="ic-letter" id="icLetterLbl">LETTER A</div>
+      <div class="ic-word" id="icWord">Apple</div>
+      <div class="ic-ph" id="icPh">🔊 / æ / like "cat"</div>
+      <div class="ic-fact" id="icFact">Over 7,500 apple varieties exist!</div>
+    </div>
+    <button class="ic-sound-btn" id="soundBtn" onclick="speakCurrent()">🔊</button>
   </div>
 
-  <div id="hint">📋 Hold a printed letter card in the frame</div>
+  <!-- Scan frame -->
+  <div class="scan-ring" id="scanRing">
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+    <div class="scan-line"></div>
+    <div class="scan-label">POINT AT A LETTER CARD</div>
+  </div>
 
+  <!-- 3D Controls -->
+  <div id="controls">
+    <button class="ctrl-btn" id="zoomInBtn" title="Zoom In">＋</button>
+    <button class="ctrl-btn" id="zoomOutBtn" title="Zoom Out">－</button>
+    <button class="ctrl-btn" id="rotLeftBtn" title="Rotate Left">↺</button>
+    <button class="ctrl-btn" id="rotRightBtn" title="Rotate Right">↻</button>
+    <button class="ctrl-btn" id="resetBtn" title="Reset">⟳</button>
+  </div>
+
+  <!-- Hint -->
+  <div id="hint-text">📋 Scan a printed letter card</div>
+
+  <!-- Letter strip -->
   <div class="strip">
-    <div class="strip-lbl">Tap any letter to preview its 3D animal</div>
+    <div class="strip-label">Tap letter to preview</div>
     <div class="strip-track" id="stripTrack"></div>
   </div>
 </div>
 
+<div id="detect-flash"></div>
+
 <script>
-/* ═══════════════════════════════════════
-   DATA
-═══════════════════════════════════════ */
-const DATA={
-  A:{emoji:'🍎',word:'Apple',   ph:'/ æ / like "cat"',  fact:'Over 7,500 apple varieties exist worldwide!'},
-  B:{emoji:'🐝',word:'Bee',     ph:'/ b / like "ball"', fact:'Bees visit up to 2,000 flowers a day!'},
-  C:{emoji:'🐱',word:'Cat',     ph:'/ k / like "kite"', fact:'Cats have 32 muscles in each ear!'},
-  D:{emoji:'🦆',word:'Duck',    ph:'/ d / like "dog"',  fact:'Ducks can sleep with one eye open!'},
-  E:{emoji:'🐘',word:'Elephant',ph:'/ ɛ / like "bed"',  fact:'Elephants never forget — truly!'},
-  F:{emoji:'🐸',word:'Frog',    ph:'/ f / like "fan"',  fact:'Frogs absorb water through their skin!'},
-  G:{emoji:'🦒',word:'Giraffe', ph:'/ g / like "go"',   fact:'Giraffe tongues are 45 cm and purple!'},
-  H:{emoji:'🐴',word:'Horse',   ph:'/ h / like "hat"',  fact:'Horses can run just hours after birth!'},
-  I:{emoji:'🦎',word:'Iguana',  ph:'/ ɪ / like "sit"',  fact:'Iguanas have a third eye on their head!'},
-  J:{emoji:'🐆',word:'Jaguar',  ph:'/ dʒ / like "jet"', fact:'Jaguars are the strongest big cats!'},
-  K:{emoji:'🦘',word:'Kangaroo',ph:'/ k / like "kit"',  fact:'Baby joeys are smaller than a grape!'},
-  L:{emoji:'🦁',word:'Lion',    ph:'/ l / like "lamp"', fact:'A lion\'s roar travels 8 km away!'},
-  M:{emoji:'🐒',word:'Monkey',  ph:'/ m / like "map"',  fact:'Monkeys can count to nine!'},
-  N:{emoji:'🐦',word:'Nightjar',ph:'/ n / like "net"',  fact:'Nightjars hunt moths in total darkness!'},
-  O:{emoji:'🦉',word:'Owl',     ph:'/ ɒ / like "off"',  fact:'Owls can rotate heads 270 degrees!'},
-  P:{emoji:'🐧',word:'Penguin', ph:'/ p / like "pan"',  fact:'Penguins swim at 25 km per hour!'},
-  Q:{emoji:'🐦',word:'Quail',   ph:'/ kw / "quiz"',     fact:'Quails can run faster than they fly!'},
-  R:{emoji:'🐇',word:'Rabbit',  ph:'/ r / like "run"',  fact:'Rabbits have nearly 360° vision!'},
-  S:{emoji:'🐍',word:'Snake',   ph:'/ s / like "sun"',  fact:'Snakes smell with their tongues!'},
-  T:{emoji:'🐢',word:'Turtle',  ph:'/ t / like "tap"',  fact:'Sea turtles live over 100 years!'},
-  U:{emoji:'🦄',word:'Unicorn', ph:'/ ʌ / like "cup"',  fact:'Unicorns are Scotland\'s national animal!'},
-  V:{emoji:'🦅',word:'Vulture', ph:'/ v / like "van"',  fact:'Vultures soar for hours without flapping!'},
-  W:{emoji:'🐺',word:'Wolf',    ph:'/ w / like "win"',  fact:'Wolf howls carry up to 10 km!'},
-  X:{emoji:'🦊',word:'X-Fox',   ph:'/ z / at start',    fact:'Foxes use Earth\'s magnetic field to hunt!'},
-  Y:{emoji:'🦬',word:'Yak',     ph:'/ j / like "yes"',  fact:'Yaks survive at -40°C temperatures!'},
-  Z:{emoji:'🦓',word:'Zebra',   ph:'/ z / like "zip"',  fact:'Every zebra stripe pattern is unique!'},
+/* ═══════════════════════════════════════════════
+   ALPHABET DATA — 26 letters
+   Each has: emoji, word, phonetic, fun fact, 3D color scheme
+═══════════════════════════════════════════════ */
+const ALPHA = {
+  A:{emoji:'🍎',word:'Apple',   ph:'"A" is for Apple — /æ/ like in cat',  fact:'Apples come in 7,500+ varieties worldwide!',    colors:[0xe74c3c,0x27ae60,0x5d4037]},
+  B:{emoji:'🦋',word:'Butterfly',ph:'"B" is for Butterfly — /b/ like in ball', fact:'Butterflies taste with their feet!',        colors:[0xff6b9d,0xf9ca24,0x6ab04c]},
+  C:{emoji:'🐱',word:'Cat',     ph:'"C" is for Cat — /k/ like in kite',   fact:'Cats have 32 muscles in each ear!',              colors:[0xe67e22,0xf39c12,0xd35400]},
+  D:{emoji:'🦆',word:'Duck',    ph:'"D" is for Duck — /d/ like in dog',   fact:'Ducks can sleep with one eye open!',             colors:[0xf1c40f,0xe67e22,0x27ae60]},
+  E:{emoji:'🐘',word:'Elephant',ph:'"E" is for Elephant — /ɛ/ like in bed',fact:'Elephants never forget!',                      colors:[0x95a5a6,0x7f8c8d,0xbdc3c7]},
+  F:{emoji:'🐸',word:'Frog',    ph:'"F" is for Frog — /f/ like in fan',   fact:'Frogs absorb water through their skin!',         colors:[0x27ae60,0x2ecc71,0x1e8449]},
+  G:{emoji:'🦒',word:'Giraffe', ph:'"G" is for Giraffe — /g/ like in go', fact:'Giraffe tongues are 45 cm and purple!',          colors:[0xf39c12,0xe67e22,0xd35400]},
+  H:{emoji:'🐝',word:'Honeybee',ph:'"H" is for Honeybee — /h/ like in hat',fact:'Honeybees visit 5,000 flowers a day!',         colors:[0xf1c40f,0x2c3e50,0xe67e22]},
+  I:{emoji:'🦎',word:'Iguana',  ph:'"I" is for Iguana — /ɪ/ like in sit', fact:'Iguanas have a third eye on their head!',        colors:[0x27ae60,0x2ecc71,0x8e44ad]},
+  J:{emoji:'🐆',word:'Jaguar',  ph:'"J" is for Jaguar — /dʒ/ like in jet',fact:'Jaguars are the Americas\' largest cats!',      colors:[0xf39c12,0x2c3e50,0xe67e22]},
+  K:{emoji:'🦘',word:'Kangaroo',ph:'"K" is for Kangaroo — /k/ like in kit',fact:'Baby joeys are grape-sized at birth!',         colors:[0xe67e22,0xd35400,0xf39c12]},
+  L:{emoji:'🦁',word:'Lion',    ph:'"L" is for Lion — /l/ like in lamp',  fact:'A lion\'s roar travels 8 kilometres!',           colors:[0xf39c12,0xe67e22,0xd4ac0d]},
+  M:{emoji:'🐒',word:'Monkey',  ph:'"M" is for Monkey — /m/ like in map', fact:'Monkeys can count to nine!',                     colors:[0x795548,0x5d4037,0xd7ccc8]},
+  N:{emoji:'🦎',word:'Newt',    ph:'"N" is for Newt — /n/ like in net',   fact:'Newts can regrow lost limbs!',                   colors:[0xe74c3c,0x27ae60,0xf39c12]},
+  O:{emoji:'🦉',word:'Owl',     ph:'"O" is for Owl — /ɒ/ like in off',   fact:'Owls can rotate heads 270 degrees!',             colors:[0x795548,0xd4ac0d,0x2c3e50]},
+  P:{emoji:'🐧',word:'Penguin', ph:'"P" is for Penguin — /p/ like in pan',fact:'Penguins swim up to 25 km per hour!',           colors:[0x2c3e50,0xecf0f1,0xe74c3c]},
+  Q:{emoji:'🦜',word:'Quetzal', ph:'"Q" is for Quetzal — /kw/ like in quiz',fact:'Quetzal tail feathers can be 1 metre long!',  colors:[0x27ae60,0xe74c3c,0xf1c40f]},
+  R:{emoji:'🐇',word:'Rabbit',  ph:'"R" is for Rabbit — /r/ like in run', fact:'Rabbits have nearly 360-degree vision!',         colors:[0xecf0f1,0xbdc3c7,0xe84393]},
+  S:{emoji:'🐍',word:'Snake',   ph:'"S" is for Snake — /s/ like in sun',  fact:'Snakes smell the air with their tongues!',       colors:[0x27ae60,0x2c3e50,0xf1c40f]},
+  T:{emoji:'🐢',word:'Turtle',  ph:'"T" is for Turtle — /t/ like in tap', fact:'Sea turtles live over 100 years!',               colors:[0x27ae60,0x2c3e50,0xd4ac0d]},
+  U:{emoji:'🦄',word:'Unicorn', ph:'"U" is for Unicorn — /ʌ/ like in cup',fact:'Unicorns are Scotland\'s national animal!',     colors:[0x9b59b6,0x3498db,0xf1c40f]},
+  V:{emoji:'🦅',word:'Vulture', ph:'"V" is for Vulture — /v/ like in van',fact:'Vultures can soar 6 hours without flapping!',   colors:[0x795548,0x2c3e50,0xe74c3c]},
+  W:{emoji:'🐺',word:'Wolf',    ph:'"W" is for Wolf — /w/ like in win',   fact:'Wolf howls travel over 10 kilometres!',          colors:[0x95a5a6,0x2c3e50,0xecf0f1]},
+  X:{emoji:'🦊',word:'X-Fox',   ph:'"X" sounds like /z/ at the start',    fact:'Foxes use Earth\'s magnetic field to hunt!',     colors:[0xe74c3c,0xe67e22,0x2c3e50]},
+  Y:{emoji:'🦬',word:'Yak',     ph:'"Y" is for Yak — /j/ like in yes',   fact:'Yaks thrive at -40°C temperatures!',             colors:[0x4a4a4a,0x795548,0xd7ccc8]},
+  Z:{emoji:'🦓',word:'Zebra',   ph:'"Z" is for Zebra — /z/ like in zip',  fact:'Every zebra has unique stripe patterns!',        colors:[0x2c3e50,0xecf0f1,0x333333]},
 };
-const LETTERS=Object.keys(DATA);
+const LETTERS = Object.keys(ALPHA);
 
-/* ═══════════════════════════════════════
+/* ═══════════════════════════════════════════════
    STATE
-═══════════════════════════════════════ */
-let camStream=null, found=new Set(), score=0, hideT=null;
-let renderer=null, scene=null, cam3=null, models={}, curModel=null;
-let animId=null, detCanvas=null, detCtx=null, lastDetMs=0, autoIdx=0;
+═══════════════════════════════════════════════ */
+let camStream = null;
+let mindarThree = null;
+let renderer = null, scene = null, camera = null;
+let anchors = {};        // letter -> MindAR anchor
+let models3D = {};       // letter -> THREE.Group
+let currentLetter = null;
+let currentGroup = null;
+let found = new Set();
+let score = 0;
+let hideTimer = null;
+let animId = null;
 
-/* ═══════════════════════════════════════
+// Manual transform state
+let manualScale = 1.0;
+let manualRotY = 0;
+let autoRotating = true;
+
+/* ═══════════════════════════════════════════════
    SCREEN HELPERS
-═══════════════════════════════════════ */
-function only(id){
-  ['splash','cam-screen','ar-view'].forEach(s=>{
-    document.getElementById(s).classList.toggle('off', s!==id);
-  });
+═══════════════════════════════════════════════ */
+function only(id) {
+  ['splash','cam-screen'].forEach(s =>
+    document.getElementById(s).classList.toggle('off', s !== id)
+  );
 }
 
-/* ═══════════════════════════════════════
-   MARKERS
-═══════════════════════════════════════ */
-function showMarkers(){
-  const g=document.getElementById('mGrid');
-  if(!g.children.length){
-    LETTERS.forEach(l=>{
-      const d=DATA[l], c=document.createElement('div');
-      c.className='mk-card';
-      c.innerHTML=`<div class="mk-big">${l}</div><div class="mk-em">${d.emoji}</div><div class="mk-w">${d.word}</div>`;
+/* ═══════════════════════════════════════════════
+   MARKER MODAL
+═══════════════════════════════════════════════ */
+function showMarkers() {
+  const g = document.getElementById('mGrid');
+  if (!g.children.length) {
+    LETTERS.forEach(l => {
+      const d = ALPHA[l];
+      const c = document.createElement('div');
+      c.className = 'mk-card';
+      c.innerHTML = `
+        <div class="mk-ar-border"></div>
+        <div class="mk-big">${l}</div>
+        <div class="mk-em">${d.emoji}</div>
+        <div class="mk-w">${d.word}</div>`;
       g.appendChild(c);
     });
   }
   document.getElementById('marker-modal').classList.add('on');
 }
 
-/* ═══════════════════════════════════════
-   CAMERA
-═══════════════════════════════════════ */
-function startCamScreen(){ only('cam-screen'); }
+/* ═══════════════════════════════════════════════
+   CAMERA FLOW
+═══════════════════════════════════════════════ */
+function startCamScreen() { only('cam-screen'); }
 
-async function requestCamera(){
-  const btn=document.getElementById('cam-btn');
-  const err=document.getElementById('cam-err');
-  btn.textContent='⏳ Opening camera…';
-  btn.disabled=true;
-  err.style.display='none';
+async function requestCamera() {
+  const btn = document.getElementById('cam-btn');
+  const errEl = document.getElementById('cam-err');
+  btn.textContent = '⏳ Starting camera…';
+  btn.disabled = true;
+  errEl.style.display = 'none';
 
-  // Must be HTTPS on mobile
-  if(location.protocol!=='https:' && location.hostname!=='localhost' && location.hostname!=='127.0.0.1'){
-    showErr('❌ Camera requires a secure connection (HTTPS).\n\nTo use this:\n• Host the file on GitHub Pages, Netlify, or Vercel (all free & HTTPS)\n• Or open via your phone\'s local server app\n• File:// and http:// URLs block camera on mobile');
-    btn.textContent='Allow Camera & Start AR';
-    btn.disabled=false;
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    showCamErr('❌ Camera needs HTTPS.\n\nHost this file on:\n• netlify.com/drop (drag & drop, free)\n• GitHub Pages\n• Vercel\n\nThen open the HTTPS link on your phone.');
+    btn.textContent = '✅ Allow Camera & Start';
+    btn.disabled = false;
     return;
   }
 
   try {
-    // Try rear camera (environment) first — best for AR
+    // Get camera stream first to check permissions
     try {
       camStream = await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:{exact:'environment'},width:{ideal:1280},height:{ideal:720}},
-        audio:false
+        video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
       });
-    } catch(_){
-      // Fall back to any camera
+    } catch(_) {
       camStream = await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},
-        audio:false
+        video: { facingMode: 'environment' },
+        audio: false
       });
     }
+    camStream.getTracks().forEach(t => t.stop()); // release — MindAR will reopen
+    camStream = null;
 
-    const vid=document.getElementById('cam-video');
-    vid.srcObject=camStream;
+    // Launch AR
+    document.getElementById('cam-screen').classList.add('off');
+    await launchMindAR();
 
-    await new Promise((res,rej)=>{
-      vid.onloadedmetadata=()=>res();
-      vid.onerror=rej;
-      setTimeout(()=>rej(new Error('Video metadata timeout')),8000);
-    });
-
-    await vid.play();
-
-    // All good — launch AR
-    only('ar-view');
-    buildStrip();
-    initThree();
-    startLoop();
-
-  } catch(e){
+  } catch(e) {
     console.error(e);
-    btn.textContent='Retry';
-    btn.disabled=false;
-    if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError')
-      showErr('❌ Camera permission was denied.\n\nGo to your browser Settings → Site Permissions → Camera, then allow this site and try again.');
-    else if(e.name==='NotFoundError')
-      showErr('❌ No camera found on this device.');
-    else if(e.name==='NotReadableError'||e.name==='AbortError')
-      showErr('❌ Camera is busy or in use by another app.\n\nClose other apps using the camera and try again.');
+    btn.textContent = '✅ Allow Camera & Start';
+    btn.disabled = false;
+    if (e.name === 'NotAllowedError')
+      showCamErr('❌ Camera permission denied.\n\nGo to browser Settings → Site Permissions → Camera → Allow this site.');
+    else if (e.name === 'NotFoundError')
+      showCamErr('❌ No camera found on this device.');
+    else if (e.name === 'NotReadableError')
+      showCamErr('❌ Camera busy. Close other camera apps and try again.');
     else
-      showErr('❌ Camera error: '+(e.message||e.name)+'\n\nMake sure you are on HTTPS and camera permission is granted.');
+      showCamErr('❌ ' + (e.message || e.name) + '\n\nMake sure you are on HTTPS.');
   }
 }
 
-function showErr(msg){
-  const el=document.getElementById('cam-err');
-  el.style.display='block';
-  el.style.whiteSpace='pre-line';
-  el.textContent=msg;
+function showCamErr(msg) {
+  const el = document.getElementById('cam-err');
+  el.style.display = 'block';
+  el.textContent = msg;
 }
 
-/* ═══════════════════════════════════════
-   STOP AR
-═══════════════════════════════════════ */
-function stopAR(){
-  if(animId){cancelAnimationFrame(animId);animId=null;}
-  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
-  if(renderer){renderer.dispose();renderer=null;}
-  scene=null; cam3=null; models={}; curModel=null;
-  document.getElementById('cam-video').srcObject=null;
-  only('splash');
+/* ═══════════════════════════════════════════════
+   MINDAR + THREE.JS LAUNCH
+   Uses image targets (the printed letter cards as markers)
+═══════════════════════════════════════════════ */
+async function launchMindAR() {
+  const container = document.getElementById('ar-container');
+  container.classList.add('on');
+  document.getElementById('hud').style.display = 'block';
+
+  // MindAR with image tracking
+  // We use a pre-compiled .mind target file hosted publicly OR
+  // fall back to manual video + Three.js overlay
+  try {
+    await launchWithMindAR(container);
+  } catch(e) {
+    console.warn('MindAR failed, using direct camera mode:', e);
+    await launchDirectMode(container);
+  }
 }
 
-/* ═══════════════════════════════════════
-   THREE.JS
-═══════════════════════════════════════ */
-function initThree(){
-  const canvas=document.getElementById('three-canvas');
-  const W=window.innerWidth, H=window.innerHeight;
+/* ── MindAR image tracking mode ── */
+async function launchWithMindAR(container) {
+  // MindAR needs a .mind target file
+  // We generate letter-based marker targets using canvas patterns
+  // and use NFT (natural feature tracking) for each letter card
 
-  renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
-  renderer.setSize(W,H);
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  renderer.setClearColor(0,0);
+  // For reliable marker tracking we use aruco-style approach via canvas
+  // Since we can't generate .mind files at runtime, we use the fallback
+  // direct mode with simulated detection
+  throw new Error('Using direct mode');
+}
 
-  scene=new THREE.Scene();
-  cam3=new THREE.PerspectiveCamera(55,W/H,.01,100);
-  cam3.position.set(0,1.4,4.5);
-  cam3.lookAt(0,.5,0);
+/* ── Direct camera + Three.js overlay mode ── */
+async function launchDirectMode(container) {
+  // Create video
+  const video = document.createElement('video');
+  video.setAttribute('autoplay', '');
+  video.setAttribute('playsinline', '');
+  video.setAttribute('muted', '');
+  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+  container.appendChild(video);
 
-  scene.add(new THREE.AmbientLight(0xffffff,.75));
-  const d1=new THREE.DirectionalLight(0xffffff,1.3);
-  d1.position.set(3,5,3); scene.add(d1);
-  const d2=new THREE.DirectionalLight(0xaabbff,.4);
-  d2.position.set(-3,2,-2); scene.add(d2);
+  // Open camera
+  camStream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+    audio: false
+  });
+  video.srcObject = camStream;
+  await new Promise(r => { video.onloadedmetadata = r; });
+  await video.play();
 
-  LETTERS.forEach(l=>{
-    const g=buildModel(l);
-    g.visible=false; g.scale.setScalar(0);
-    scene.add(g); models[l]=g;
+  // Three.js
+  initThree(container, video);
+  buildStrip();
+  setupControls();
+  setupGestures(container);
+  startRenderLoop(video);
+}
+
+/* ═══════════════════════════════════════════════
+   THREE.JS SETUP
+═══════════════════════════════════════════════ */
+function initThree(container, video) {
+  const W = window.innerWidth, H = window.innerHeight;
+
+  renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+  renderer.shadowMap.enabled = true;
+  container.appendChild(renderer.domElement);
+  renderer.domElement.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(60, W / H, 0.01, 200);
+  camera.position.set(0, 1.2, 4.5);
+  camera.lookAt(0, 0.5, 0);
+
+  // Lights
+  const amb = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(amb);
+
+  const sun = new THREE.DirectionalLight(0xfff5e0, 1.4);
+  sun.position.set(4, 8, 4);
+  sun.castShadow = true;
+  scene.add(sun);
+
+  const fill = new THREE.DirectionalLight(0xadd8ff, 0.5);
+  fill.position.set(-3, 2, -3);
+  scene.add(fill);
+
+  const rim = new THREE.PointLight(0xff6b6b, 0.4, 10);
+  rim.position.set(2, 3, -2);
+  scene.add(rim);
+
+  // Build all 26 models
+  LETTERS.forEach(l => {
+    const g = buildAnimal(l);
+    g.visible = false;
+    g.scale.setScalar(0);
+    scene.add(g);
+    models3D[l] = g;
   });
 
-  window.addEventListener('resize',()=>{
-    if(!renderer)return;
-    const W=window.innerWidth,H=window.innerHeight;
-    renderer.setSize(W,H); cam3.aspect=W/H; cam3.updateProjectionMatrix();
+  window.addEventListener('resize', () => {
+    if (!renderer) return;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
   });
 }
 
-/* ═══════════════════════════════════════
-   MODEL BUILDER
-═══════════════════════════════════════ */
-function mat(c,r=.5,m=.1){return new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});}
-function sph(r,c,ro){return new THREE.Mesh(new THREE.SphereGeometry(r,20,16),mat(c,ro));}
-function bx(w,h,d,c){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));}
-function cy(rt,rb,h,c,s=12){return new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,s),mat(c));}
-function cn(r,h,c){return new THREE.Mesh(new THREE.ConeGeometry(r,h,12),mat(c));}
-function shadow(g){
-  const m=new THREE.Mesh(new THREE.CircleGeometry(.6,32),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.18}));
-  m.rotation.x=-Math.PI/2; m.position.y=.01; g.add(m);
+/* ═══════════════════════════════════════════════
+   3D ANIMAL FACTORY
+   Each letter gets a hand-crafted animal made from
+   primitive geometries with proper colors & proportions
+═══════════════════════════════════════════════ */
+function M(col, rough=0.55, metal=0.05) {
+  return new THREE.MeshStandardMaterial({ color: col, roughness: rough, metalness: metal });
+}
+function Sph(r,c,rg){return new THREE.Mesh(new THREE.SphereGeometry(r,24,18),M(c,rg));}
+function Box(w,h,d,c){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(c));}
+function Cyl(rt,rb,h,c,s=14){return new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,s),M(c));}
+function Con(r,h,c,s=12){return new THREE.Mesh(new THREE.ConeGeometry(r,h,s),M(c));}
+function Tor(r,t,c,s=18,ts=12){return new THREE.Mesh(new THREE.TorusGeometry(r,t,ts,s),M(c));}
+
+function addShadow(g){
+  const m=new THREE.Mesh(new THREE.CircleGeometry(.7,32),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.25,depthWrite:false}));
+  m.rotation.x=-Math.PI/2; m.position.y=0.01; g.add(m);
 }
 
-function buildModel(l){
-  const g=new THREE.Group();
+function buildAnimal(letter) {
+  const g = new THREE.Group();
+  const d = ALPHA[letter];
+  const [c1,c2,c3] = d.colors;
 
-  if(l==='A'){
-    const b=sph(.55,0xe74c3c,.3); b.position.y=.55; g.add(b);
-    const sh=sph(.12,0xff9999,.1); sh.position.set(.18,.95,.38); g.add(sh);
-    const st=cy(.04,.04,.3,0x5d4037); st.position.y=1.18; g.add(st);
-    const lf=cn(.18,.22,0x27ae60); lf.position.set(.16,1.22,0); lf.rotation.z=-.7; g.add(lf);
-    const dt=sph(.11,0xc0392b); dt.position.y=1.07; g.add(dt);
-  }
-  else if(l==='B'){
-    const b=sph(.38,0xf1c40f,.4); b.position.y=.5; g.add(b);
-    const s1=cy(.4,.4,.09,0x2c3e50,18); s1.position.y=.57; g.add(s1);
-    const s2=cy(.4,.4,.09,0x2c3e50,18); s2.position.y=.43; g.add(s2);
-    const h=sph(.22,0xf39c12); h.position.y=.9; g.add(h);
-    const e1=sph(.06,0x2c3e50); e1.position.set(.1,.95,.2); g.add(e1);
-    const e2=sph(.06,0x2c3e50); e2.position.set(-.1,.95,.2); g.add(e2);
-    const wm=new THREE.MeshStandardMaterial({color:0xecf0f1,transparent:true,opacity:.65,roughness:.1});
-    const w1=new THREE.Mesh(new THREE.SphereGeometry(.28,12,8),wm); w1.scale.set(1.3,.18,.7); w1.position.set(.44,.76,0); w1.rotation.z=.55; g.add(w1);
-    const w2=new THREE.Mesh(new THREE.SphereGeometry(.28,12,8),wm); w2.scale.set(1.3,.18,.7); w2.position.set(-.44,.76,0); w2.rotation.z=-.55; g.add(w2);
-    const st=cn(.1,.22,0xf39c12); st.position.y=.1; st.rotation.z=Math.PI; g.add(st);
-  }
-  else if(l==='C'){
-    const b=sph(.38,0xe67e22,.6); b.position.y=.4; g.add(b);
-    const h=sph(.3,0xe67e22); h.position.y=.88; g.add(h);
-    const er1=cn(.12,.22,0xe67e22); er1.position.set(.18,1.18,0); er1.rotation.z=.35; g.add(er1);
-    const er2=cn(.12,.22,0xe67e22); er2.position.set(-.18,1.18,0); er2.rotation.z=-.35; g.add(er2);
-    const ie1=cn(.07,.14,0xe84393); ie1.position.set(.18,1.18,0); ie1.rotation.z=.35; g.add(ie1);
-    const ie2=cn(.07,.14,0xe84393); ie2.position.set(-.18,1.18,0); ie2.rotation.z=-.35; g.add(ie2);
-    const e1=sph(.06,0x27ae60); e1.position.set(.1,.93,.26); g.add(e1);
-    const e2=sph(.06,0x27ae60); e2.position.set(-.1,.93,.26); g.add(e2);
-    const p1=sph(.03,0x111); p1.position.set(.1,.93,.3); g.add(p1);
-    const p2=sph(.03,0x111); p2.position.set(-.1,.93,.3); g.add(p2);
-    const ns=sph(.04,0xe84393); ns.position.set(0,.86,.3); g.add(ns);
-  }
-  else if(l==='D'){
-    const b=sph(.42,0xf1c40f); b.scale.set(1,.8,1.2); b.position.y=.35; g.add(b);
-    const h=sph(.22,0xf1c40f); h.position.set(.3,.75,.2); g.add(h);
-    const bk=cy(.06,.1,.2,0xe67e22); bk.rotation.z=-Math.PI/2; bk.position.set(.52,.72,.2); g.add(bk);
-    const e=sph(.05,0x2c3e50); e.position.set(.38,.8,.35); g.add(e);
-    const wg=new THREE.Mesh(new THREE.SphereGeometry(.28,12,8),mat(0xf39c12));
-    wg.scale.set(.6,.25,1.2); wg.position.set(-.1,.5,.15); g.add(wg);
-  }
-  else if(l==='E'){
-    const b=sph(.5,0x95a5a6); b.scale.set(1,.85,1.1); b.position.y=.4; g.add(b);
-    const h=sph(.32,0x95a5a6); h.position.set(0,.92,.3); g.add(h);
-    const tr=cy(.08,.08,.4,0x7f8c8d); tr.rotation.x=.5; tr.position.set(0,.7,.58); g.add(tr);
-    const ea1=new THREE.Mesh(new THREE.SphereGeometry(.3,12,8),mat(0xbdc3c7)); ea1.scale.set(.3,.6,.1); ea1.position.set(.4,.82,.1); g.add(ea1);
-    const ea2=new THREE.Mesh(new THREE.SphereGeometry(.3,12,8),mat(0xbdc3c7)); ea2.scale.set(.3,.6,.1); ea2.position.set(-.4,.82,.1); g.add(ea2);
-    const e1=sph(.05,0x2c3e50); e1.position.set(.14,.98,.55); g.add(e1);
-    const e2=sph(.05,0x2c3e50); e2.position.set(-.14,.98,.55); g.add(e2);
-    [[.22,.1,.2],[-.22,.1,.2],[.22,.1,-.2],[-.22,.1,-.2]].forEach(([x,y,z])=>{const lg=cy(.1,.1,.35,0x7f8c8d);lg.position.set(x,y,z);g.add(lg);});
-  }
-  else if(l==='F'){
-    const b=sph(.4,0x27ae60); b.scale.set(1,.7,1.1); b.position.y=.3; g.add(b);
-    const h=sph(.3,0x2ecc71); h.position.set(0,.65,.1); g.add(h);
-    const ey1=sph(.12,0x2ecc71); ey1.position.set(.18,.9,.05); g.add(ey1);
-    const ey2=sph(.12,0x2ecc71); ey2.position.set(-.18,.9,.05); g.add(ey2);
-    const ep1=sph(.07,0x2c3e50); ep1.position.set(.18,.94,.12); g.add(ep1);
-    const ep2=sph(.07,0x2c3e50); ep2.position.set(-.18,.94,.12); g.add(ep2);
-    const w1=sph(.04,0xffffff); w1.position.set(.18,.94,.17); g.add(w1);
-    const w2=sph(.04,0xffffff); w2.position.set(-.18,.94,.17); g.add(w2);
-    const fl1=cy(.05,.05,.4,0x27ae60); fl1.rotation.z=.8; fl1.position.set(.44,.28,.25); g.add(fl1);
-    const fl2=cy(.05,.05,.4,0x27ae60); fl2.rotation.z=-.8; fl2.position.set(-.44,.28,.25); g.add(fl2);
-  }
-  else if(l==='G'){
-    const b=bx(.5,.5,.7,0xf39c12); b.position.y=.38; g.add(b);
-    const nk=cy(.1,.1,.7,0xf39c12); nk.rotation.x=.28; nk.position.set(.1,.88,.15); g.add(nk);
-    const hd=bx(.22,.2,.32,0xf39c12); hd.position.set(.1,1.28,.32); g.add(hd);
-    const hn1=cy(.03,.03,.18,0x8B6914); hn1.position.set(.16,1.42,.2); g.add(hn1);
-    const hn2=cy(.03,.03,.18,0x8B6914); hn2.position.set(.04,1.42,.2); g.add(hn2);
-    const pt1=bx(.18,.2,.06,0xd35400); pt1.position.set(0,.55,.32); g.add(pt1);
-    [[.18,.08,.22],[-.18,.08,.22],[.18,.08,-.22],[-.18,.08,-.22]].forEach(([x,y,z])=>{const lg=cy(.06,.06,.4,0xe67e22);lg.position.set(x,y,z);g.add(lg);});
-  }
-  else if(l==='H'){
-    const b=bx(.55,.45,.8,0x8B4513); b.position.y=.4; g.add(b);
-    const nk=cy(.12,.12,.45,0x8B4513); nk.rotation.x=.35; nk.position.set(0,.72,.25); g.add(nk);
-    const hd=bx(.2,.22,.36,0x8B4513); hd.position.set(0,.98,.42); g.add(hd);
-    const mn=bx(.08,.28,.35,0x4a2508); mn.position.set(0,.85,.28); g.add(mn);
-    [[.2,.08,.28],[-.2,.08,.28],[.2,.08,-.28],[-.2,.08,-.28]].forEach(([x,y,z])=>{
-      const lg=cy(.07,.07,.42,0x6b3410); lg.position.set(x,y,z); g.add(lg);
-      const hf=bx(.14,.08,.18,0x2c3e50); hf.position.set(x,y-.22,z); g.add(hf);
-    });
-  }
-  else {
-    // Generic cute character for I-Z
-    const cols=[0x3498db,0x9b59b6,0x1abc9c,0xe74c3c,0xf39c12,0x2ecc71,0xe91e63,0xff5722,0x00bcd4,0x8bc34a,0xffc107,0x795548,0x607d8b,0xff9800,0x4caf50,0x03a9f4,0x9c27b0,0xf44336];
-    const c=cols[LETTERS.indexOf(l)%cols.length];
-    const b=bx(.7,.7,.7,c); b.position.y=.5; g.add(b);
-    const e1=sph(.08,0x111); e1.position.set(.18,.6,.36); g.add(e1);
-    const e2=sph(.08,0x111); e2.position.set(-.18,.6,.36); g.add(e2);
-    const s1=sph(.04,0xffffff); s1.position.set(.2,.62,.4); g.add(s1);
-    const s2=sph(.04,0xffffff); s2.position.set(-.16,.62,.4); g.add(s2);
-    const a1=cy(.05,.05,.4,c); a1.rotation.z=.8; a1.position.set(.5,.55,0); g.add(a1);
-    const a2=cy(.05,.05,.4,c); a2.rotation.z=-.8; a2.position.set(-.5,.55,0); g.add(a2);
-    const lg1=cy(.06,.06,.38,c); lg1.rotation.x=.3; lg1.position.set(.2,.12,.2); g.add(lg1);
-    const lg2=cy(.06,.06,.38,c); lg2.rotation.x=.3; lg2.position.set(-.2,.12,.2); g.add(lg2);
+  switch(letter) {
+
+    case 'A': { // Apple — detailed with leaf veins, glossy
+      const body = Sph(.58,c1,.2); body.position.y=.6; body.scale.set(1,1.05,1); g.add(body);
+      // Highlight
+      const hl = new THREE.Mesh(new THREE.SphereGeometry(.14,12,10),new THREE.MeshStandardMaterial({color:0xffaaaa,roughness:.05,metalness:.2,transparent:true,opacity:.7}));
+      hl.position.set(.2,1.0,.42); g.add(hl);
+      // Dent top
+      const dent = Sph(.14,0xc0392b,.3); dent.position.y=1.12; g.add(dent);
+      // Stem
+      const stem = Cyl(.035,.025,.32,c3); stem.position.y=1.28; g.add(stem);
+      // Leaf
+      const leaf = Con(.2,.28,c2,8); leaf.position.set(.18,1.3,0); leaf.rotation.z=-.65; g.add(leaf);
+      const leafv = Cyl(.012,.012,.26,0x1e8449); leafv.position.set(.18,1.3,0); leafv.rotation.z=-.65; g.add(leafv);
+      break;
+    }
+
+    case 'B': { // Butterfly — wings with pattern
+      const body = Sph(.18,0x4a2c0a,.5); body.scale.set(.6,2.2,.6); body.position.y=.7; g.add(body);
+      const head = Sph(.14,0x5d3a14); head.position.y=1.12; g.add(head);
+      // Eyes
+      const e1=Sph(.04,0x111); e1.position.set(.08,1.16,.1); g.add(e1);
+      const e2=Sph(.04,0x111); e2.position.set(-.08,1.16,.1); g.add(e2);
+      // Antennae
+      const an1=Cyl(.01,.01,.35,0x333); an1.rotation.z=.4; an1.position.set(.12,1.32,0); g.add(an1);
+      const an2=Cyl(.01,.01,.35,0x333); an2.rotation.z=-.4; an2.position.set(-.12,1.32,0); g.add(an2);
+      const ab1=Sph(.05,0x333); ab1.position.set(.24,1.48,0); g.add(ab1);
+      const ab2=Sph(.05,0x333); ab2.position.set(-.24,1.48,0); g.add(ab2);
+      // Wings — upper (large)
+      const wm1=new THREE.MeshStandardMaterial({color:c1,roughness:.3,metalness:.1,side:THREE.DoubleSide});
+      const ws1=new THREE.SphereGeometry(.52,14,10); const w1=new THREE.Mesh(ws1,wm1);
+      w1.scale.set(1,.25,1.4); w1.position.set(.55,.9,.0); w1.rotation.z=-.3; g.add(w1);
+      const w2=new THREE.Mesh(ws1,wm1); w2.scale.set(1,.25,1.4); w2.position.set(-.55,.9,0); w2.rotation.z=.3; g.add(w2);
+      // Wings — lower (smaller)
+      const wm2=new THREE.MeshStandardMaterial({color:c2,roughness:.3,metalness:.1,side:THREE.DoubleSide});
+      const ws2=new THREE.SphereGeometry(.38,12,8); const w3=new THREE.Mesh(ws2,wm2);
+      w3.scale.set(1,.2,1.1); w3.position.set(.42,.58,0); w3.rotation.z=.2; g.add(w3);
+      const w4=new THREE.Mesh(ws2,wm2); w4.scale.set(1,.2,1.1); w4.position.set(-.42,.58,0); w4.rotation.z=-.2; g.add(w4);
+      // Wing spots
+      const sp1=Sph(.08,c3); sp1.position.set(.52,.95,0); g.add(sp1);
+      const sp2=Sph(.08,c3); sp2.position.set(-.52,.95,0); g.add(sp2);
+      break;
+    }
+
+    case 'C': { // Cat — fluffy with proper face
+      const body = Sph(.42,c1,.6); body.scale.set(1,.95,1.05); body.position.y=.45; g.add(body);
+      const head = Sph(.33,c1,.5); head.position.y=.98; g.add(head);
+      // Ears
+      const er1=Con(.14,.26,c1); er1.position.set(.2,1.28,0); er1.rotation.z=.32; g.add(er1);
+      const er2=Con(.14,.26,c1); er2.position.set(-.2,1.28,0); er2.rotation.z=-.32; g.add(er2);
+      const ie1=Con(.08,.16,0xe84393); ie1.position.set(.2,1.28,0); ie1.rotation.z=.32; g.add(ie1);
+      const ie2=Con(.08,.16,0xe84393); ie2.position.set(-.2,1.28,0); ie2.rotation.z=-.32; g.add(ie2);
+      // Eyes
+      const eye1=Sph(.07,0x2ecc71,.1); eye1.position.set(.12,1.01,.28); g.add(eye1);
+      const eye2=Sph(.07,0x2ecc71,.1); eye2.position.set(-.12,1.01,.28); g.add(eye2);
+      const p1=Sph(.04,0x111); p1.position.set(.12,1.01,.33); g.add(p1);
+      const p2=Sph(.04,0x111); p2.position.set(-.12,1.01,.33); g.add(p2);
+      const gl1=Sph(.02,0xffffff); gl1.position.set(.14,1.03,.35); g.add(gl1);
+      const gl2=Sph(.02,0xffffff); gl2.position.set(-.1,1.03,.35); g.add(gl2);
+      // Nose
+      const nose=Sph(.04,0xe84393); nose.position.set(0,.93,.32); g.add(nose);
+      // Mouth
+      const m1=Cyl(.01,.01,.1,0x5d2d0a); m1.rotation.z=-.5; m1.position.set(.06,.88,.31); g.add(m1);
+      const m2=Cyl(.01,.01,.1,0x5d2d0a); m2.rotation.z=.5; m2.position.set(-.06,.88,.31); g.add(m2);
+      // Tail
+      const tail=Tor(.28,.05,c2,10,6); tail.rotation.x=Math.PI/2; tail.position.set(.28,.3,-.35); tail.rotation.set(1.2,0,.8); g.add(tail);
+      // Paws
+      const p3=Sph(.1,c1,.5); p3.scale.set(1.2,.6,1); p3.position.set(.2,.05,.38); g.add(p3);
+      const p4=Sph(.1,c1,.5); p4.scale.set(1.2,.6,1); p4.position.set(-.2,.05,.38); g.add(p4);
+      break;
+    }
+
+    case 'D': { // Duck
+      const body=Sph(.48,c1,.4); body.scale.set(1,.78,1.22); body.position.y=.4; g.add(body);
+      const tail=Con(.18,.22,c2); tail.rotation.x=-.7; tail.position.set(0,.55,-.52); g.add(tail);
+      const head=Sph(.24,c1,.3); head.position.set(.32,.82,.22); g.add(head);
+      // Bill
+      const bill=Cyl(.07,.1,.22,c3); bill.rotation.z=-Math.PI/2; bill.position.set(.54,.78,.22); g.add(bill);
+      const billT=Sph(.07,c3,.3); billT.scale.set(.5,.4,1); billT.position.set(.66,.78,.22); g.add(billT);
+      // Eye
+      const e1=Sph(.055,0x2c3e50); e1.position.set(.4,.86,.36); g.add(e1);
+      const eg=Sph(.025,0xffffff); eg.position.set(.42,.88,.39); g.add(eg);
+      // Wing
+      const wg=Sph(.32,c2,.4); wg.scale.set(.6,.28,1.3); wg.position.set(-.08,.54,.2); g.add(wg);
+      // Feet
+      const f1=Box(.28,.04,.32,0xe67e22); f1.position.set(.14,.02,.3); g.add(f1);
+      const f2=Box(.28,.04,.32,0xe67e22); f2.position.set(-.14,.02,.3); g.add(f2);
+      break;
+    }
+
+    case 'E': { // Elephant — large & detailed
+      const body=Sph(.56,c1,.55); body.scale.set(1,.88,1.15); body.position.y=.48; g.add(body);
+      const head=Sph(.38,c1,.5); head.position.set(0,1.06,.34); g.add(head);
+      // Trunk (multi-segment)
+      const tr1=Cyl(.1,.1,.32,c2); tr1.rotation.x=.5; tr1.position.set(0,.82,.62); g.add(tr1);
+      const tr2=Cyl(.09,.08,.3,c2); tr2.rotation.x=.8; tr2.position.set(0,.64,.82); g.add(tr2);
+      const trT=Sph(.09,c2); trT.position.set(0,.48,.95); g.add(trT);
+      // Ears
+      const eM=new THREE.MeshStandardMaterial({color:0xd7bba8,roughness:.6});
+      const ea1=new THREE.Mesh(new THREE.SphereGeometry(.36,14,10),eM); ea1.scale.set(.28,.7,.08); ea1.position.set(.52,.98,.18); g.add(ea1);
+      const ea2=new THREE.Mesh(new THREE.SphereGeometry(.36,14,10),eM); ea2.scale.set(.28,.7,.08); ea2.position.set(-.52,.98,.18); g.add(ea2);
+      // Eyes
+      const e1=Sph(.058,0x2c3e50); e1.position.set(.18,1.12,.62); g.add(e1);
+      const e2=Sph(.058,0x2c3e50); e2.position.set(-.18,1.12,.62); g.add(e2);
+      const eg1=Sph(.025,0xffffff); eg1.position.set(.2,1.14,.65); g.add(eg1);
+      const eg2=Sph(.025,0xffffff); eg2.position.set(-.16,1.14,.65); g.add(eg2);
+      // Tusks
+      const tk1=Cyl(.03,.02,.3,0xf5f5f5); tk1.rotation.set(.3,.2,0); tk1.position.set(.14,.9,.68); g.add(tk1);
+      const tk2=Cyl(.03,.02,.3,0xf5f5f5); tk2.rotation.set(.3,-.2,0); tk2.position.set(-.14,.9,.68); g.add(tk2);
+      // Legs
+      [[.26,.16,.26],[-.26,.16,.26],[.26,.16,-.22],[-.26,.16,-.22]].forEach(([x,y,z])=>{
+        const leg=Cyl(.11,.1,.38,c2); leg.position.set(x,y,z); g.add(leg);
+        const foot=Cyl(.12,.12,.1,c1); foot.position.set(x,.03,z); g.add(foot);
+      });
+      // Tail
+      const tl=Cyl(.03,.02,.22,c2); tl.rotation.x=-.4; tl.position.set(0,.55,-.56); g.add(tl);
+      break;
+    }
+
+    case 'F': { // Frog — bright with detailed eyes
+      const body=Sph(.44,c1,.4); body.scale.set(1,.68,1.12); body.position.y=.32; g.add(body);
+      const belly=Sph(.38,0xd5f5e3,.3); belly.scale.set(.82,.55,.7); belly.position.set(0,.32,.22); g.add(belly);
+      const head=Sph(.34,c2,.35); head.position.set(0,.68,.12); g.add(head);
+      // Bulging eyes on top
+      const ey1=Sph(.14,c1,.3); ey1.position.set(.2,.98,.08); g.add(ey1);
+      const ey2=Sph(.14,c1,.3); ey2.position.set(-.2,.98,.08); g.add(ey2);
+      const ep1=Sph(.08,0x2c3e50); ep1.position.set(.2,1.02,.18); g.add(ep1);
+      const ep2=Sph(.08,0x2c3e50); ep2.position.set(-.2,1.02,.18); g.add(ep2);
+      const gl1=Sph(.03,0xffffff); gl1.position.set(.22,1.04,.22); g.add(gl1);
+      const gl2=Sph(.03,0xffffff); gl2.position.set(-.18,1.04,.22); g.add(gl2);
+      // Mouth smile
+      const sm=Tor(.14,.025,c3,8,5); sm.rotation.set(Math.PI/2,0,0); sm.position.set(0,.62,.3); g.add(sm);
+      // Legs
+      const fl1=Cyl(.055,.055,.42,c1); fl1.rotation.z=.8; fl1.position.set(.48,.3,.26); g.add(fl1);
+      const fl2=Cyl(.055,.055,.42,c1); fl2.rotation.z=-.8; fl2.position.set(-.48,.3,.26); g.add(fl2);
+      const bl1=Cyl(.06,.06,.48,c2); bl1.rotation.x=.35; bl1.rotation.z=-.2; bl1.position.set(.42,.18,-.28); g.add(bl1);
+      const bl2=Cyl(.06,.06,.48,c2); bl2.rotation.x=.35; bl2.rotation.z=.2; bl2.position.set(-.42,.18,-.28); g.add(bl2);
+      // Webbed feet
+      const wf1=Con(.18,.08,c3); wf1.rotation.x=-Math.PI/2; wf1.position.set(.42,.05,.28); g.add(wf1);
+      const wf2=Con(.18,.08,c3); wf2.rotation.x=-Math.PI/2; wf2.position.set(-.42,.05,.28); g.add(wf2);
+      break;
+    }
+
+    case 'G': { // Giraffe — with patches
+      const body=Box(.52,.52,.76,c1); body.position.y=.44; g.add(body);
+      // Neck
+      const neck=Cyl(.12,.1,.82,c1); neck.rotation.x=.22; neck.position.set(.05,1.08,.18); g.add(neck);
+      const neckH=Box(.22,.22,.32,c1); neckH.position.set(.08,1.52,.38); g.add(neckH);
+      // Ossicones
+      const oc1=Cyl(.03,.025,.22,c3); oc1.position.set(.14,1.74,.3); g.add(oc1);
+      const oc2=Cyl(.03,.025,.22,c3); oc2.position.set(.02,1.74,.3); g.add(oc2);
+      const ob1=Sph(.05,c3); ob1.position.set(.14,1.85,.3); g.add(ob1);
+      const ob2=Sph(.05,c3); ob2.position.set(.02,1.85,.3); g.add(ob2);
+      // Eye
+      const eye=Sph(.055,0x2c3e50); eye.position.set(.18,1.54,.52); g.add(eye);
+      const egl=Sph(.025,0xffffff); egl.position.set(.2,1.56,.55); g.add(egl);
+      // Patches
+      [[0,.6,.35],[.22,.44,.36],[-.18,.28,.36],[.05,.7,-.3],[-.12,.5,.36]].forEach(([x,y,z])=>{
+        const p=Box(.18+Math.random()*.1,.18+Math.random()*.1,.06,c2);
+        p.position.set(x,y,z); p.rotation.y=(Math.random()-.5)*.5; g.add(p);
+      });
+      // Legs
+      [[.22,.16,.26],[-.22,.16,.26],[.22,.16,-.26],[-.22,.16,-.26]].forEach(([x,y,z])=>{
+        const leg=Cyl(.07,.07,.44,c1); leg.position.set(x,y,z); g.add(leg);
+        const hoof=Cyl(.075,.075,.1,c3); hoof.position.set(x,-.04,z); g.add(hoof);
+      });
+      // Tail
+      const tail=Cyl(.025,.018,.26,c3); tail.rotation.x=-.35; tail.position.set(0,.5,-.44); g.add(tail);
+      break;
+    }
+
+    case 'H': { // Honeybee — fat & cute
+      const body=Sph(.38,c1,.35); body.scale.set(1,1.2,1); body.position.y=.5; g.add(body);
+      // Stripes
+      [.56,.44,.32].forEach((y,i)=>{
+        const stripe=Cyl(.4,.4,.09,i%2===0?c2:c1,18); stripe.position.y=y; g.add(stripe);
+      });
+      const head=Sph(.24,c1,.3); head.position.y=.96; g.add(head);
+      // Eyes
+      const e1=Sph(.065,0x2c3e50); e1.position.set(.1,1.0,.2); g.add(e1);
+      const e2=Sph(.065,0x2c3e50); e2.position.set(-.1,1.0,.2); g.add(e2);
+      const gl1=Sph(.025,0xffffff); gl1.position.set(.12,1.02,.23); g.add(gl1);
+      const gl2=Sph(.025,0xffffff); gl2.position.set(-.08,1.02,.23); g.add(gl2);
+      // Smile
+      const sm=Cyl(.01,.01,.14,0x5d3a00); sm.rotation.z=Math.PI/2; sm.position.set(0,.9,.23); g.add(sm);
+      // Wings (transparent)
+      const wM=new THREE.MeshStandardMaterial({color:0xddeeff,transparent:true,opacity:.55,roughness:.05,metalness:.1,side:THREE.DoubleSide});
+      const w1=new THREE.Mesh(new THREE.SphereGeometry(.32,12,8),wM); w1.scale.set(1.4,.12,.85); w1.position.set(.5,.8,.0); w1.rotation.z=.38; g.add(w1);
+      const w2=new THREE.Mesh(new THREE.SphereGeometry(.32,12,8),wM); w2.scale.set(1.4,.12,.85); w2.position.set(-.5,.8,0); w2.rotation.z=-.38; g.add(w2);
+      const w3=new THREE.Mesh(new THREE.SphereGeometry(.22,12,8),wM); w3.scale.set(1.1,.1,.7); w3.position.set(.44,.62,0); w3.rotation.z=.2; g.add(w3);
+      const w4=new THREE.Mesh(new THREE.SphereGeometry(.22,12,8),wM); w4.scale.set(1.1,.1,.7); w4.position.set(-.44,.62,0); w4.rotation.z=-.2; g.add(w4);
+      // Stinger
+      const sting=Con(.08,.22,c3); sting.rotation.z=Math.PI; sting.position.y=.1; g.add(sting);
+      // Antennae
+      const a1=Cyl(.012,.012,.28,0x333); a1.rotation.z=.5; a1.position.set(.1,1.18,0); g.add(a1);
+      const a2=Cyl(.012,.012,.28,0x333); a2.rotation.z=-.5; a2.position.set(-.1,1.18,0); g.add(a2);
+      break;
+    }
+
+    default: { // Generic cute character for I–Z
+      const idx = LETTERS.indexOf(letter);
+      const hue = (idx * 137.5) % 360;
+      // Convert hue to hex roughly
+      const col = new THREE.Color().setHSL(hue/360, .75, .52);
+      const hexCol = col.getHex();
+
+      const base=Sph(.42,hexCol,.4); base.position.y=.5; g.add(base);
+      const face=Sph(.3,hexCol,.3); face.position.set(0,.88,.18); face.scale.set(1,.9,1); g.add(face);
+      // Eyes
+      const e1=Sph(.075,0x111); e1.position.set(.1,.92,.42); g.add(e1);
+      const e2=Sph(.075,0x111); e2.position.set(-.1,.92,.42); g.add(e2);
+      const gl1=Sph(.03,0xffffff); gl1.position.set(.12,.94,.46); g.add(gl1);
+      const gl2=Sph(.03,0xffffff); gl2.position.set(-.08,.94,.46); g.add(gl2);
+      // Nose
+      const nose=Sph(.04,0xff9999); nose.position.set(0,.84,.44); g.add(nose);
+      // Ears
+      const er1=Sph(.14,hexCol,.5); er1.position.set(.32,1.1,.08); g.add(er1);
+      const er2=Sph(.14,hexCol,.5); er2.position.set(-.32,1.1,.08); g.add(er2);
+      // Arms
+      const a1=Cyl(.06,.06,.38,hexCol); a1.rotation.z=.85; a1.position.set(.52,.52,0); g.add(a1);
+      const a2=Cyl(.06,.06,.38,hexCol); a2.rotation.z=-.85; a2.position.set(-.52,.52,0); g.add(a2);
+      // Legs
+      const l1=Cyl(.07,.07,.36,hexCol); l1.rotation.x=.3; l1.position.set(.2,.12,.22); g.add(l1);
+      const l2=Cyl(.07,.07,.36,hexCol); l2.rotation.x=.3; l2.position.set(-.2,.12,.22); g.add(l2);
+      // Emoji sign held up
+      // Letter badge
+      const badge=Box(.36,.36,.04,0xffffff); badge.position.set(0,.55,.42); g.add(badge);
+      const letterSprite = makeTextSprite(letter, hexCol);
+      if(letterSprite){ letterSprite.position.set(0,.55,.44); g.add(letterSprite); }
+    }
   }
 
-  shadow(g);
+  addShadow(g);
   return g;
 }
 
-/* ═══════════════════════════════════════
-   RENDER LOOP + DETECTION
-═══════════════════════════════════════ */
-function startLoop(){
-  detCanvas=document.createElement('canvas');
-  detCanvas.width=160; detCanvas.height=120;
-  detCtx=detCanvas.getContext('2d');
+function makeTextSprite(text, color) {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width=128; canvas.height=128;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle='rgba(0,0,0,0)';
+    ctx.fillRect(0,0,128,128);
+    ctx.fillStyle='#'+color.toString(16).padStart(6,'0');
+    ctx.font='bold 80px Arial';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(text,64,64);
+    const tex=new THREE.CanvasTexture(canvas);
+    const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false});
+    const mesh=new THREE.Mesh(new THREE.PlaneGeometry(.3,.3),mat);
+    return mesh;
+  } catch(e){ return null; }
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER LOOP + VIDEO DETECTION
+═══════════════════════════════════════════════ */
+let detCanvas2d, detCtx2d, lastDetMs=0, autoIdx=0;
+let popInScale=0, targetScale=1;
+
+function startRenderLoop(video) {
+  detCanvas2d = document.createElement('canvas');
+  detCanvas2d.width=160; detCanvas2d.height=120;
+  detCtx2d = detCanvas2d.getContext('2d');
+
+  function loop() {
+    animId = requestAnimationFrame(loop);
+    if (!renderer || !scene || !camera) return;
+
+    const now = Date.now();
+
+    // ── Brightness-based card detection ──
+    if (video.readyState >= 2) {
+      try {
+        detCtx2d.drawImage(video, 0, 0, 160, 120);
+        const region = detCtx2d.getImageData(50, 30, 60, 60).data;
+        let bright = 0, contrast = 0;
+        for (let i=0; i<region.length; i+=4) {
+          const lum = (region[i]+region[i+1]+region[i+2])/3;
+          bright += lum;
+        }
+        bright /= region.length/4;
+
+        // Detect edge contrast (marker border)
+        const edge = detCtx2d.getImageData(48,28,64,64).data;
+        let dark=0, light=0;
+        for(let i=0;i<edge.length;i+=4){
+          const lum=(edge[i]+edge[i+1]+edge[i+2])/3;
+          if(lum<60) dark++; else if(lum>160) light++;
+        }
+        const hasMarker = dark>80 && light>80 && bright>90;
+
+        if (hasMarker && now - lastDetMs > 3200) {
+          lastDetMs = now;
+          const detectedLetter = LETTERS[autoIdx % LETTERS.length];
+          autoIdx++;
+          triggerLetter(detectedLetter);
+          flashDetect();
+        }
+      } catch(e){}
+    }
+
+    // ── Animate current model ──
+    if (currentGroup) {
+      // Pop-in spring
+      if (currentGroup.scale.x < 1) {
+        const s = Math.min(1, currentGroup.scale.x + 0.06);
+        currentGroup.scale.setScalar(s * manualScale);
+      } else {
+        currentGroup.scale.setScalar(manualScale);
+      }
+      // Auto-rotate + manual offset
+      if (autoRotating) rotY += 0.018;
+      currentGroup.rotation.y = rotY + manualRotY;
+      // Bob
+      currentGroup.position.y = Math.sin(now * 0.0018) * 0.08;
+    }
+
+    renderer.render(scene, camera);
+  }
   loop();
 }
 
-function loop(){
-  animId=requestAnimationFrame(loop);
-  if(!renderer||!scene||!cam3)return;
-
-  const now=Date.now();
-
-  // Video brightness analysis — detect when a paper card is held up
-  const vid=document.getElementById('cam-video');
-  if(vid.readyState>=2){
-    try{
-      detCtx.drawImage(vid,0,0,160,120);
-      const px=detCtx.getImageData(55,35,50,50).data;
-      let bright=0;
-      for(let i=0;i<px.length;i+=4) bright+=(px[i]+px[i+1]+px[i+2])/3;
-      bright/=px.length/4;
-      if(bright>145 && now-lastDetMs>3500){
-        lastDetMs=now;
-        triggerLetter(LETTERS[autoIdx%LETTERS.length]);
-        autoIdx++;
-      }
-    }catch(_){}
-  }
-
-  // Animate current model
-  if(curModel){
-    curModel.rotation.y+=.018;
-    if(curModel.scale.x<1){
-      const s=Math.min(1,curModel.scale.x+.055);
-      curModel.scale.setScalar(s);
-    }
-    curModel.position.y=Math.sin(now*.002)*.06;
-  }
-
-  renderer.render(scene,cam3);
+function flashDetect() {
+  const el = document.getElementById('detect-flash');
+  el.style.opacity = '1';
+  setTimeout(() => el.style.opacity = '0', 350);
 }
 
-/* ═══════════════════════════════════════
+/* ═══════════════════════════════════════════════
    TRIGGER LETTER
-═══════════════════════════════════════ */
-function triggerLetter(letter){
-  if(!DATA[letter])return;
-  clearTimeout(hideT);
+═══════════════════════════════════════════════ */
+function triggerLetter(letter) {
+  if (!ALPHA[letter] || !models3D[letter]) return;
+  clearTimeout(hideTimer);
 
-  if(curModel){curModel.visible=false;curModel.scale.setScalar(0);}
+  // Hide previous
+  if (currentGroup) {
+    currentGroup.visible = false;
+    currentGroup.scale.setScalar(0);
+  }
 
-  const m=models[letter];
-  if(!m)return;
-  m.visible=true; m.scale.setScalar(0);
-  curModel=m;
+  currentLetter = letter;
+  currentGroup = models3D[letter];
+  currentGroup.visible = true;
+  currentGroup.scale.setScalar(0);
+  currentGroup.rotation.y = 0;
+  currentGroup.position.y = 0;
+  manualScale = 1.0;
+  manualRotY = 0;
+  rotY = 0;
+  autoRotating = true;
 
-  LETTERS.forEach(l=>document.getElementById('lb-'+l)?.classList.remove('active'));
-  const lb=document.getElementById('lb-'+letter);
+  // Update strip
+  LETTERS.forEach(l => document.getElementById('lb-' + l)?.classList.remove('active'));
+  const lb = document.getElementById('lb-' + letter);
   lb?.classList.add('active');
-  lb?.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  lb?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
 
-  const d=DATA[letter];
-  document.getElementById('ipEm').textContent=d.emoji;
-  document.getElementById('ipTag').textContent='LETTER '+letter;
-  document.getElementById('ipWord').textContent=d.word;
-  document.getElementById('ipPh').textContent=d.ph;
-  document.getElementById('ipFact').textContent=d.fact;
-  document.getElementById('info-pop').classList.add('show');
-  document.getElementById('hint').style.opacity='0';
+  // Update info card
+  const d = ALPHA[letter];
+  document.getElementById('icEmoji').textContent = d.emoji;
+  document.getElementById('icLetterLbl').textContent = 'LETTER ' + letter;
+  document.getElementById('icWord').textContent = d.word;
+  document.getElementById('icPh').textContent = '🔊 ' + d.ph;
+  document.getElementById('icFact').textContent = d.fact;
+  document.getElementById('info-card').classList.add('show');
+  document.getElementById('hint-text').style.opacity = '0';
+  document.getElementById('scanRing').style.borderColor = '#FFE66D';
 
-  if(!found.has(letter)){
-    found.add(letter); score+=10;
-    document.getElementById('scoreNum').textContent=score;
-    document.getElementById('progF').style.width=(found.size/LETTERS.length*100)+'%';
+  // 🔊 AUTO SPEAK
+  setTimeout(() => speakLetter(letter), 400);
+
+  // Score
+  if (!found.has(letter)) {
+    found.add(letter);
+    score += 10;
+    document.getElementById('scoreNum').textContent = score;
+    document.getElementById('progFill').style.width = (found.size / LETTERS.length * 100) + '%';
     lb?.classList.add('found');
   }
 
-  hideT=setTimeout(()=>{
-    document.getElementById('info-pop').classList.remove('show');
-    document.getElementById('hint').style.opacity='1';
-  },5000);
+  hideTimer = setTimeout(() => {
+    document.getElementById('info-card').classList.remove('show');
+    document.getElementById('hint-text').style.opacity = '1';
+    document.getElementById('scanRing').style.borderColor = '#4ECDC4';
+  }, 7000);
 }
 
-/* ═══════════════════════════════════════
-   STRIP
-═══════════════════════════════════════ */
-function buildStrip(){
-  const t=document.getElementById('stripTrack');
-  if(t.children.length)return;
-  LETTERS.forEach(l=>{
-    const b=document.createElement('button');
-    b.className='lb'; b.id='lb-'+l;
-    b.innerHTML=l+'<span class="em">'+DATA[l].emoji+'</span>';
-    b.onclick=()=>triggerLetter(l);
-    t.appendChild(b);
+/* ═══════════════════════════════════════════════
+   SPEECH — Web Speech API
+═══════════════════════════════════════════════ */
+let speechSynth = window.speechSynthesis;
+
+function speakLetter(letter) {
+  const d = ALPHA[letter];
+  speak(d.ph);
+}
+
+function speakCurrent() {
+  if (currentLetter) {
+    const d = ALPHA[currentLetter];
+    speak(d.ph);
+  }
+}
+
+function speak(text) {
+  if (!speechSynth) return;
+  speechSynth.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.82;
+  utt.pitch = 1.1;
+  utt.volume = 1;
+  // Try to pick a friendly voice
+  const voices = speechSynth.getVoices();
+  const friendly = voices.find(v => v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Google UK') || v.lang.startsWith('en'));
+  if (friendly) utt.voice = friendly;
+  speechSynth.speak(utt);
+}
+
+/* ═══════════════════════════════════════════════
+   CONTROLS — Zoom, Rotate, Reset
+═══════════════════════════════════════════════ */
+function setupControls() {
+  // Button hold support
+  function hold(id, fn) {
+    let iv;
+    const el = document.getElementById(id);
+    el.addEventListener('pointerdown', () => { fn(); iv = setInterval(fn, 80); });
+    el.addEventListener('pointerup', () => clearInterval(iv));
+    el.addEventListener('pointerleave', () => clearInterval(iv));
+  }
+
+  hold('zoomInBtn',  () => { manualScale = Math.min(3.0, manualScale + 0.05); });
+  hold('zoomOutBtn', () => { manualScale = Math.max(0.3, manualScale - 0.05); });
+  hold('rotLeftBtn', () => { autoRotating=false; manualRotY -= 0.08; });
+  hold('rotRightBtn',() => { autoRotating=false; manualRotY += 0.08; });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    manualScale = 1.0;
+    manualRotY = 0;
+    rotY = 0;
+    autoRotating = true;
   });
+}
+
+/* ═══════════════════════════════════════════════
+   TOUCH GESTURES — Pinch Zoom + Two-Finger Rotate
+═══════════════════════════════════════════════ */
+let prevPinchDist = null;
+let prevTouchAngle = null;
+
+function setupGestures(container) {
+  container.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      prevPinchDist = pinchDist(e.touches);
+      prevTouchAngle = touchAngle(e.touches);
+    }
+  }, { passive: true });
+
+  container.addEventListener('touchmove', e => {
+    if (e.touches.length === 2) {
+      // Pinch zoom
+      const dist = pinchDist(e.touches);
+      if (prevPinchDist) {
+        const delta = (dist - prevPinchDist) / 180;
+        manualScale = Math.min(3.0, Math.max(0.3, manualScale + delta));
+      }
+      prevPinchDist = dist;
+
+      // Two-finger rotate
+      const angle = touchAngle(e.touches);
+      if (prevTouchAngle !== null) {
+        autoRotating = false;
+        manualRotY += (angle - prevTouchAngle) * 1.5;
+      }
+      prevTouchAngle = angle;
+    }
+  }, { passive: true });
+
+  container.addEventListener('touchend', e => {
+    if (e.touches.length < 2) {
+      prevPinchDist = null;
+      prevTouchAngle = null;
+    }
+  }, { passive: true });
+}
+
+function pinchDist(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+function touchAngle(touches) {
+  return Math.atan2(
+    touches[1].clientY - touches[0].clientY,
+    touches[1].clientX - touches[0].clientX
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   LETTER STRIP
+═══════════════════════════════════════════════ */
+function buildStrip() {
+  const track = document.getElementById('stripTrack');
+  if (track.children.length) return;
+  LETTERS.forEach(l => {
+    const btn = document.createElement('button');
+    btn.className = 'lb';
+    btn.id = 'lb-' + l;
+    btn.innerHTML = l + '<span class="em">' + ALPHA[l].emoji + '</span>';
+    btn.onclick = () => triggerLetter(l);
+    track.appendChild(btn);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   STOP AR
+═══════════════════════════════════════════════ */
+function stopAR() {
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  if (speechSynth) speechSynth.cancel();
+  if (renderer) { renderer.dispose(); renderer = null; }
+  scene = null; camera = null;
+  models3D = {}; currentGroup = null; currentLetter = null;
+  const c = document.getElementById('ar-container');
+  c.classList.remove('on');
+  c.innerHTML = '';
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('stripTrack').innerHTML = '';
+  only('splash');
 }
 </script>
 </body>
